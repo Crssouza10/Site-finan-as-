@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual Técnico - Sistema de Gestão Financeira</title>
+    <style>
+        :root {
+            --primary: #1a252f;
+            --secondary: #2c3e50;
+            --accent: #3498db;
+            --success: #28a745;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --bg: #f8f9fa;
+            --text: #333;
+            --code-bg: #2d2d2d;
+            --code-text: #f8f8f2;
+            --border: #dee2e6;
+            --sidebar-width: 280px;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--primary);
+            color: #fff;
+            padding: 2rem 1.5rem;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        .sidebar h1 {
+            font-size: 1.4rem;
+            margin-bottom: 0.5rem;
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 0.5rem;
+        }
+        .sidebar .version {
+            font-size: 0.85rem;
+            opacity: 0.8;
+            margin-bottom: 2rem;
+        }
+        .sidebar nav ul {
+            list-style: none;
+        }
+        .sidebar nav li {
+            margin-bottom: 0.6rem;
+        }
+        .sidebar nav a {
+            color: #cbd5e1;
+            text-decoration: none;
+            font-size: 0.95rem;
+            display: block;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        .sidebar nav a:hover, .sidebar nav a.active {
+            background: var(--accent);
+            color: #fff;
+            padding-left: 1.2rem;
+        }
+        /* Main Content */
+        .main {
+            margin-left: var(--sidebar-width);
+            padding: 2.5rem 3rem;
+            max-width: 1100px;
+            flex: 1;
+        }
+        header {
+            margin-bottom: 2.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid var(--border);
+        }
+        header h1 {
+            font-size: 2.2rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+        section {
+            margin-bottom: 3rem;
+            scroll-margin-top: 2rem;
+        }
+        section h2 {
+            font-size: 1.8rem;
+            color: var(--secondary);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--accent);
+        }
+        section h3 {
+            font-size: 1.4rem;
+            color: var(--secondary);
+            margin: 1.5rem 0 0.8rem;
+        }
+        p, li { margin-bottom: 0.8rem; }
+        ul, ol { margin-left: 1.5rem; margin-bottom: 1rem; }
+        
+        /* Cards & Alerts */
+        .card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .alert {
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+        }
+        .alert-info { background: #e7f5ff; border-left: 4px solid var(--accent); }
+        .alert-success { background: #e8f5e9; border-left: 4px solid var(--success); }
+        .alert-warning { background: #fff8e1; border-left: 4px solid var(--warning); }
+        .alert-danger { background: #ffebee; border-left: 4px solid var(--danger); }
+
+        /* Code Blocks */
+        code {
+            background: #f1f3f5;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9em;
+            color: #d63384;
+        }
+        pre {
+            background: var(--code-bg);
+            color: var(--code-text);
+            padding: 1.2rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 1rem 0;
+            line-height: 1.5;
+        }
+        pre code {
+            background: transparent;
+            color: inherit;
+            padding: 0;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            background: #fff;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        th, td {
+            padding: 0.8rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        th {
+            background: var(--secondary);
+            color: #fff;
+            font-weight: 600;
+        }
+        tr:hover { background: #f8f9fa; }
+
+        /* Footer */
+        footer {
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .container { flex-direction: column; }
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                padding: 1rem;
+            }
+            .main { margin-left: 0; padding: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <h1>📘 Manual Técnico</h1>
+            <div class="version">Gestão Financeira v2.0</div>
+            <nav>
+                <ul>
+                    <li><a href="#visao-geral">1. Visão Geral</a></li>
+                    <li><a href="#requisitos">2. Requisitos</a></li>
+                    <li><a href="#instalacao">3. Instalação</a></li>
+                    <li><a href="#configuracao">4. Configuração</a></li>
+                    <li><a href="#arquitetura">5. Arquitetura & BD</a></li>
+                    <li><a href="#funcionalidades">6. Funcionalidades</a></li>
+                    <li><a href="#api-rotas">7. API & Rotas</a></li>
+                    <li><a href="#logica-negocio">8. Lógica de Negócio</a></li>
+                    <li><a href="#relatorios">9. Relatórios</a></li>
+                    <li><a href="#troubleshooting">10. Troubleshooting</a></li>
+                    <li><a href="#seguranca">11. Segurança</a></li>
+                    <li><a href="#versoes">12. Histórico</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="main">
+            <header>
+                <h1>Sistema de Gestão Financeira</h1>
+                <p>Documentação técnica completa para instalação, configuração, manutenção e evolução do produto.</p>
+            </header>
+
+            <section id="visao-geral">
+                <h2>1. Visão Geral</h2>
+                <p>Aplicação web desenvolvida em <strong>Python/Flask</strong> para controle de contas a pagar e receber, com foco em <strong>fluxo de caixa real</strong>, dashboard interativo, relatórios analíticos e backup automatizado.</p>
+                <div class="alert alert-info">
+                    <strong>💡 Diferencial:</strong> Todos os indicadores (KPIs, gráficos e relatórios) utilizam o campo <code>valor_pago</code> para refletir a realidade financeira efetiva, não apenas projeções.
+                </div>
+            </section>
+
+            <section id="requisitos">
+                <h2>2. Requisitos do Sistema</h2>
+                <table>
+                    <thead>
+                        <tr><th>Componente</th><th>Versão Mínima</th><th>Recomendado</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Python</td><td>3.14</td><td>3.14+</td></tr>
+                        <tr><td>PostgreSQL</td><td>17</td><td>17+</td></tr>
+                        <tr><td>Flask</td><td>3.0</td><td>3.1+</td></tr>
+                        <tr><td>SQLAlchemy</td><td>2.0</td><td>2.0+</td></tr>
+                        <tr><td>Chart.js</td><td>4.4</td><td>CDN (auto)</td></tr>
+                        <tr><td>Bootstrap</td><td>5.3</td><td>CDN (auto)</td></tr>
+                        <tr><td>Memória RAM</td><td>4 GB</td><td>8 GB</td></tr>
+                        <tr><td>Armazenamento</td><td>10 GB</td><td>SSD 20 GB</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section id="instalacao">
+                <h2>3. Instalação</h2>
+                <pre><code># 1. Clone ou extraia o projeto
+cd Projeto_Contas_Orcamento
+
+# 2. Crie ambiente virtual
+python -m venv venv
+venv\Scripts\activate  # Windows
+source venv/bin/activate  # Linux/Mac
+
+# 3. Instale dependências
+pip install -r requirements.txt
+
+# 4. Configure variáveis de ambiente
+cp .env.example .env
+# Edite .env com suas credenciais
+
+# 5. Execute em desenvolvimento
+python app.py
+# Acesse: http://localhost:5000</code></pre>
+            </section>
+
+            <section id="configuracao">
+                <h2>4. Configuração</h2>
+                <h3>Arquivo <code>.env</code></h3>
+                <pre><code># Banco de Dados
+DATABASE_URL=postgresql://postgres:senha@localhost:5432/ContasOrcamento
+DB_USER=postgres
+DB_PASSWORD=sua_senha
+DB_HOST=localhost
+DB_PORT=5432
+
+# Flask
+SECRET_KEY=chave_secreta_gerada_aleatoriamente
+FLASK_ENV=development
+FLASK_DEBUG=True
+
+# Uploads & Limites
+MAX_CONTENT_LENGTH=16777216  # 16MB
+UPLOAD_FOLDER=./uploads</code></pre>
+                <div class="alert alert-warning">
+                    ⚠️ <strong>Nunca commite o arquivo <code>.env</code> no Git.</strong> Utilize <code>.gitignore</code> para excluí-lo do versionamento.
+                </div>
+            </section>
+
+            <section id="arquitetura">
+                <h2>5. Arquitetura & Banco de Dados</h2>
+                <h3>Modelo de Dados</h3>
+                <table>
+                    <thead><tr><th>Tabela</th><th>Descrição</th><th>Campos Chave</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>pagamentos</code></td><td>Registros financeiros</td><td><code>cod</code>, <code>mes_ano</code>, <code>valor_pagar</code>, <code>valor_pago</code>, <code>receita_despesa</code></td></tr>
+                        <tr><td><code>categorias</code></td><td>Classificação (R/D)</td><td><code>id</code>, <code>nome</code>, <code>tipo</code> (R/D)</td></tr>
+                        <tr><td><code>documentos_pagamento</code></td><td>Anexos PDF</td><td><code>id</code>, <code>pagamento_id</code>, <code>conteudo</code> (BYTEA)</td></tr>
+                    </tbody>
+                </table>
+                <h3>Índices Recomendados</h3>
+                <pre><code>CREATE INDEX idx_pagamento_mes_ano ON pagamentos(mes_ano);
+CREATE INDEX idx_pagamento_tipo ON pagamentos(receita_despesa);
+CREATE INDEX idx_pagamento_categoria ON pagamentos(categoria_id);
+CREATE INDEX idx_pagamento_vencimento ON pagamentos(data_venc);</code></pre>
+            </section>
+
+            <section id="funcionalidades">
+                <h2>6. Funcionalidades Principais</h2>
+                <ul>
+                    <li>✅ <strong>CRUD Completo:</strong> Cadastro, edição, exclusão e busca de contas</li>
+                    <li>✅ <strong>Sincronia Inteligente:</strong> Selecionar categoria atualiza automaticamente o botão Receita/Despesa</li>
+                    <li>✅ <strong>Dashboard KPI:</strong> Total, Receitas, Despesas, Saldo Líquido (baseado em <code>valor_pago</code>)</li>
+                    <li>✅ <strong>Gráficos Interativos:</strong> Categorias, Evolução Mensal, Status, Ranking e <strong>Tendência Acumulada com filtros</strong></li>
+                    <li>✅ <strong>Relatórios PDF/CSV:</strong> Mensal, Anual Detalhado, Por Conta e Anual Receita/Despesa</li>
+                    <li>✅ <strong>Backup/Restore:</strong> Exportação segura via <code>pg_dump</code> e restauração controlada</li>
+                    <li>✅ <strong>Anexos:</strong> Upload e visualização de comprovantes em PDF</li>
+                </ul>
+            </section>
+
+            <section id="api-rotas">
+                <h2>7. API & Rotas</h2>
+                <table>
+                    <thead><tr><th>Rota</th><th>Método</th><th>Descrição</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>/</code></td><td>GET</td><td>Página principal (index)</td></tr>
+                        <tr><td><code>/dashboard</code></td><td>GET</td><td>Dashboard com KPIs e gráficos</td></tr>
+                        <tr><td><code>/add</code></td><td>POST</td><td>Cadastrar novo registro</td></tr>
+                        <tr><td><code>/alterar</code></td><td>POST</td><td>Atualizar registro existente</td></tr>
+                        <tr><td><code>/apagar</code></td><td>POST</td><td>Excluir registro</td></tr>
+                        <tr><td><code>/api/dashboard/data</code></td><td>GET</td><td>Dados JSON para gráficos principais</td></tr>
+                        <tr><td><code>/api/dashboard/tendencia_acumulada</code></td><td>GET</td><td>Dados acumulados com filtros de categoria/conta</td></tr>
+                        <tr><td><code>/api/backup/create</code></td><td>POST</td><td>Gerar backup manual</td></tr>
+                        <tr><td><code>/gerar_relatorio_anual</code></td><td>GET</td><td>PDF Anual Receita vs Despesa</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section id="logica-negocio">
+                <h2>8. Lógica de Negócio (Destaques)</h2>
+                <div class="card">
+                    <h3>🔄 Sincronia Categoria ↔ Tipo (Receita/Despesa)</h3>
+                    <p>O sistema detecta automaticamente o tipo financeiro baseado no texto da categoria. Se contiver <code>(RECEITA)</code>, <code>SALÁRIO</code> ou <code>APOSENTADORIA</code>, o botão <code>+R</code> torna-se verde e o campo oculto é atualizado para <code>R</code> antes do submit.</p>
+                </div>
+                <div class="card">
+                    <h3>💰 Cálculo por <code>valor_pago</code></h3>
+                    <p>Todos os indicadores, gráficos e relatórios utilizam <code>valor_pago > 0</code> como filtro. Isso garante que o dashboard reflita o <strong>caixa real</strong>, não compromissos futuros.</p>
+                </div>
+                <div class="card">
+                    <h3>📈 Tendência Acumulada com Filtros</h3>
+                    <p>O gráfico de linha acumula mês a mês respeitando os parâmetros <code>?categoria=X</code> ou <code>?conta=Y</code>. A API recalcula a série histórica dinamicamente.</p>
+                </div>
+            </section>
+
+            <section id="relatorios">
+                <h2>9. Relatórios</h2>
+                <ul>
+                    <li><strong>Mensal:</strong> Lista detalhada com status (Pago/Pendente/Atrasado)</li>
+                    <li><strong>Anual Detalhado:</strong> Agrupamento por conta com totais</li>
+                    <li><strong>Por Conta:</strong> Histórico completo de um fornecedor/recebedor</li>
+                    <li><strong>Anual Receita/Despesa:</strong> Tabela de evolução mensal com saldo acumulado e indicadores de desempenho</li>
+                </ul>
+                <div class="alert alert-success">
+                    ✅ Os relatórios são gerados via <code>FPDF</code> com formatação brasileira (R$ X.XXX,XX) e codificação Latin-1 compatível.
+                </div>
+            </section>
+
+            <section id="troubleshooting">
+                <h2>10. Solução de Problemas</h2>
+                <table>
+                    <thead><tr><th>Sintoma</th><th>Causa Provável</th><th>Solução</th></tr></thead>
+                    <tbody>
+                        <tr><td>Erro 500 no Dashboard</td><td>Variável não definida no <code>render_template</code></td><td>Verifique se todas as variáveis passaram pelo <code>return</code></td></tr>
+                        <tr><td>Gráfico vazio/NaN</td><td>API retornando estrutura incorreta</td><td>Confirme se a query filtra por <code>valor_pago > 0</code></td></tr>
+                        <tr><td>Botão Receita/Despesa não sincroniza</td><td>Função JS fora da tag <code>&lt;script&gt;</code></td><td>Mova o código para dentro do bloco JS principal</td></tr>
+                        <tr><td>Backup falha</td><td><code>PGPASSWORD</code> não configurado</td><td>Adicione ao <code>.env</code> ou use <code>.pgpass</code></td></tr>
+                        <tr><td>Upload PDF recusado</td><td>Tamanho > 10MB ou extensão inválida</td><td>Verifique validação no frontend e <code>MAX_CONTENT_LENGTH</code></td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section id="seguranca">
+                <h2>11. Segurança & Boas Práticas</h2>
+                <ul>
+                    <li>🔒 <strong>SQL Injection:</strong> Mitigado via SQLAlchemy ORM (parameterized queries)</li>
+                    <li>🛡️ <strong>Path Traversal:</strong> Validação de caminhos em uploads e backups</li>
+                    <li>🔑 <strong>Secret Key:</strong> Gerada aleatoriamente, nunca hardcodeada</li>
+                    <li>📦 <strong>Validação de Inputs:</strong> Sanitização de valores monetários e datas no backend</li>
+                    <li>🔄 <strong>Transações:</strong> <code>db.session.rollback()</code> em blocos <code>try/except</code></li>
+                </ul>
+            </section>
+
+            <section id="versoes">
+                <h2>12. Histórico de Versões</h2>
+                <table>
+                    <thead><tr><th>Versão</th><th>Data</th><th>Alterações</th></tr></thead>
+                    <tbody>
+                        <tr><td>2.0</td><td>Abr/2026</td><td>Sincronia automática Categoria↔Tipo, Gráfico de Tendência com filtros, Relatório Anual baseado em <code>valor_pago</code>, Dashboard refinado</td></tr>
+                        <tr><td>1.5</td><td>Mar/2026</td><td>Backup automatizado, API JSON para gráficos, Upload de PDF</td></tr>
+                        <tr><td>1.0</td><td>Fev/2026</td><td>CRUD básico, Filtros por mês/conta, Relatórios PDF iniciais</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <footer>
+                <p>📘 Manual Técnico - Sistema de Gestão Financeira | Desenvolvido com Python/Flask & PostgreSQL</p>
+                <p>© 2026 | Documentação atualizada em <span id="data-atual"></span></p>
+                <script>document.getElementById('data-atual').textContent = new Date().toLocaleDateString('pt-BR');</script>
+            </footer>
+        </main>
+    </div>
+</body>
+</html>

@@ -1,0 +1,9 @@
+@echo off
+echo 🚀 Iniciando Gestao Financeira Profissional...
+echo.
+echo [1/2] Verificando dependencias...
+pip install -r requirements.txt
+echo.
+echo [2/2] Iniciando Servidor Flask...
+python app.py
+pause

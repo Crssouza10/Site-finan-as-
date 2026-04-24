@@ -1,0 +1,144 @@
+<div class="card action-bar-container border-0 mb-4 animate-fade-in">
+    <div class="card-body p-4 text-white">
+        <form id="mainForm" method="POST" enctype="multipart/form-data" action="{{ url_for('main.add') }}">
+            <input type="hidden" id="cod_registro" name="cod" value="">
+            <input type="hidden" id="nova_categoria" name="nova_categoria" value="">
+            <input type="hidden" id="tipo_nova_categoria" name="tipo_nova_categoria" value="">
+            
+            <div class="row g-3 mb-3">
+                <div class="col-md-2">
+                    <label class="form-label text-white-50">Mês/Ano *</label>
+                    <input type="text" name="MesAno" id="inpMesAno" class="form-control bg-dark text-white border-secondary required-field" 
+                        placeholder="MM/AAAA" value="{{ request.args.get('MesAno', '') }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label text-white-50">Descrição da Conta *</label>
+                    <input type="text" name="Conta" id="inpConta" class="form-control bg-dark text-white border-secondary required-field" 
+                        placeholder="Ex: Luz, Água" value="{{ request.args.get('Conta', '') }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label text-white-50">Instituição</label>
+                    <input type="text" name="Instituicao" id="inpInst" class="form-control bg-dark text-white border-secondary"  
+                        value="{{ request.args.get('Instituicao', '') }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label text-white-50">Fonte Pagadora</label>
+                    <input type="text" name="Fontepaga" id="inpFonte" class="form-control bg-dark text-white border-secondary" 
+                        value="{{ request.args.get('Fontepaga', '') }}">     
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label text-white-50">Competência</label>
+                    <input type="text" name="Competencia" id="inpCompetencia" class="form-control bg-dark text-white border-secondary" 
+                        placeholder="MM/AAAA" value="{{ request.args.get('Competencia', '') }}">
+                </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-2">
+                    <label class="form-label text-white-50">Data Venc. *</label>
+                    <input type="date" name="Data_venc" id="inpVenc" class="form-control bg-dark text-white border-secondary required-field">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label text-white-50">Valor a Pagar *</label>
+                    <input type="text" name="Valor_pagar" id="inpValPagar" class="form-control bg-dark text-white border-secondary required-field" placeholder="0,00">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label text-white-50">Data Pago</label>
+                    <input type="date" name="Data_pago" id="inpDataPago" class="form-control bg-dark text-white border-secondary">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label text-white-50">Valor Pago</label>
+                    <input type="text" name="Valor_pago" id="inpValPago" class="form-control bg-dark text-white border-secondary" placeholder="0,00">
+                </div>
+                <div class="col-md-1">
+                    <label class="form-label text-white-50">Parcela</label>
+                    <input type="text" name="Parcela" id="inpParcela" class="form-control bg-dark text-white border-secondary" placeholder="01/12">
+                </div>
+                <div class="col-md-1">
+                    <label class="form-label text-white-50">Juros</label>
+                    <input type="text" name="Juros" id="inpJuros" class="form-control bg-dark text-white border-secondary" placeholder="0,00">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label text-white-50">Desconto</label>
+                    <input type="text" name="Desconto" id="inpDesconto" class="form-control bg-dark text-white border-secondary" placeholder="0,00">
+                </div>
+            </div>
+
+            <div class="row g-3 align-items-end">
+                <div class="col-md-5">
+                    <label class="form-label text-white-50">Observação</label>
+                    <textarea name="Observacao" id="inpObs" class="form-control bg-dark text-white border-secondary" rows="2"></textarea>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label text-white-50">Tipo *</label>
+                    <div class="btn-group w-100 shadow-sm" role="group">
+                        <input type="radio" class="btn-check" name="ReceitaDespesa" id="tipoR" value="R" autocomplete="off" onchange="atualizarTipoCategoria()">
+                        <label class="btn btn-outline-success btn-sm border-secondary" for="tipoR"><i class="bi bi-plus-circle me-1"></i>RECEITA</label>
+                        <input type="radio" class="btn-check" name="ReceitaDespesa" id="tipoD" value="D" autocomplete="off" checked onchange="atualizarTipoCategoria()">
+                        <label class="btn btn-outline-danger btn-sm border-secondary" for="tipoD"><i class="bi bi-dash-circle me-1"></i>DESPESA</label>
+                    </div>
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label text-white-50">Categoria *</label>
+                    <select name="Categoria" id="inpCategoria" class="form-select bg-dark text-white border-secondary required-field" 
+                            onchange="verificarCategoriaOutros(); sincronizarBotaoPorCategoria()">
+                        <option value="">Selecione uma categoria</option>
+                        {% for cat in categorias %}
+                            <option value="{{ cat.nome }}" data-tipo="{{ cat.tipo }}"
+                                    {% if request.args.get('Categoria') == cat.nome %}selected{% endif %}>
+                                {{ cat.nome }} ({{ 'Receita' if cat.tipo == 'R' else 'Despesa' }})
+                            </option>
+                        {% endfor %}
+                        <option value="Outros">Outros (criar nova)</option>
+                    </select>
+                    
+                    <div id="categoriaCustomContainer" class="categoria-custom-container mt-2">
+                        <label class="form-label text-warning mb-1">
+                            <i class="bi bi-plus-circle"></i> Nova Categoria:
+                        </label>
+                        <div class="input-group input-group-sm shadow-sm">
+                            <input type="text" id="inpNovaCategoria" class="form-control bg-dark text-white border-secondary" 
+                                placeholder="Ex: INVESTIMENTOS" onkeyup="this.value = this.value.toUpperCase()">
+                            <button type="button" class="btn btn-warning" onclick="confirmarNovaCategoria()">
+                                <i class="bi bi-check-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3 align-items-center mt-3 pt-3 border-top border-secondary border-opacity-25">
+                <div class="col-md-12">
+                    <div class="d-flex align-items-center gap-3 flex-wrap">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-primary-gradient p-2 rounded-circle me-2 shadow-sm">
+                                <i class="bi bi-robot text-white" style="font-size: 1rem;"></i>
+                            </div>
+                            <label class="form-label mb-0 text-white fw-bold">Processar com IA (PDF)</label>
+                        </div>
+                        
+                        <div class="input-group input-group-sm" style="max-width: 350px;">
+                            <input type="file" id="fileDocumento" name="documento" class="form-control bg-dark text-white border-secondary" accept=".pdf">
+                            <button type="button" class="btn btn-outline-info border-secondary" onclick="fazerUploadPDF()">
+                                <i class="bi bi-magic me-1"></i> ANALISAR
+                            </button>
+                        </div>
+                        
+                        <button type="button" class="btn btn-sm btn-outline-light border-secondary" id="btnVerAnexo" onclick="visualizarAnexoExistente()">
+                            <i class="bi bi-file-earmark-pdf me-1"></i> VER ATUAL
+                        </button>
+                        
+                        <div id="statusAnexoContainer" style="display: none;">
+                            <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50 px-3 py-2 rounded-pill">
+                                <i class="bi bi-check-circle-fill me-1"></i> DOCUMENTO PRESENTE
+                            </span>
+                        </div>
+                    </div>
+                    <div class="mt-2 text-white-50 small">
+                        <i class="bi bi-info-circle me-1"></i> A IA extrai automaticamente <strong>Valor, Vencimento e Descrição</strong> do boleto.
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | SmartWallet AI - Acompanhamento e Educação Financeira Preditiva{% endblock %}
+
+{% block content %}
+    <!-- Personalized Welcome Section -->
+    <div class="container-fluid mt-3 animate-fade-in">
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div>
+                        <h2 class="fw-800 mb-0">Olá, {{ current_user.username }}! 👋</h2>
+                        <p class="text-secondary small">Bem-vindo ao seu painel de controle financeiro inteligente.</p>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge bg-light text-dark border shadow-sm p-2">
+                            <i class="bi bi-calendar3 me-1"></i> {{ now.strftime('%d de %B, %Y') }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Section -->
+    {% include "includes/_dashboard.html" %}
+
+    <div class="section-divider my-2"></div>
+
+    <!-- Action Bar Area (Filters, Menus, CRUD) - MOVED NEAR THE GRID -->
+    <div class="action-bar-container py-2 mb-3 rounded shadow-sm">
+        <div class="container-fluid px-2">
+            {% include "includes/_navbar.html" %}
+        </div>
+    </div>
+
+    <!-- Main Entry Form -->
+    {% include "includes/_form.html" %}
+
+    <div class="section-divider my-4"></div>
+
+    <!-- Payments Table -->
+    {% if relatorio_anual %}
+        <div class="card mb-3 border-info">
+            <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-bar-chart-fill"></i> Relatório Anual Detalhado - {{ relatorio_ano }}</h5>
+                <a href="{{ url_for('main.index') }}" class="btn btn-sm btn-light text-info fw-bold">
+                    <i class="bi bi-arrow-left"></i> Voltar à Lista
+                </a>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-bordered mb-0 table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th class="text-center" width="10%">#</th>
+                            <th>Descrição da Conta</th>
+                            <th class="text-center" width="15%">Qtd. Registros</th>
+                            <th class="text-end" width="20%">Total Anual (R$)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in relatorio_anual %}
+                        <tr>
+                            <td class="text-center">{{ loop.index }}</td>
+                            <td class="fw-bold">{{ r.conta }}</td>
+                            <td class="text-center">{{ r.qtd }}</td>
+                            <td class="text-end text-primary fw-bold">
+                                R$ {{ "%.2f"|format(r.total_ano)|replace('.', ',') }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot class="table-secondary">
+                        <tr>
+                            <td colspan="3" class="text-end fw-bold">TOTAL GERAL {{ relatorio_ano }}:</td>
+                            <td class="text-end fw-bold text-dark">
+                                R$ {{ "%.2f"|format(total_geral_anual)|replace('.', ',') }}
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    {% else %}
+        {% include "includes/_table.html" %}
+    {% endif %}
+
+    <!-- Modals and Floating Buttons -->
+    {% include "includes/_modals.html" %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    console.log("Página Index Carregada - Interface Ajustada");
+</script>
+{% endblock %}

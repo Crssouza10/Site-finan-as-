@@ -1,0 +1,150 @@
+<div class="table-responsive">
+    {% if pagamentos %}
+    <table class="table table-sm table-hover table-bordered mb-0" id="tabelaResultados">
+        <thead class="table-dark">
+            <tr>
+                <th>Mês/Ano</th>
+                <th>Conta</th>
+                <th>Instituição</th>
+                <th>Fonte Paga</th>
+                <th>Categoria</th>
+                <th>Vencimento</th>
+                <th>Vl. Pagar</th>
+                <th>Dt. Pago</th>
+                <th>Vl. Pago</th>
+                <th>Parcela</th>
+                <th>Obs</th>
+                <th>Anexo</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for pg in pagamentos %}
+                {% set classe_status = "" %}
+                {% if pg.valor_pago and pg.valor_pago|float > 0 %}
+                    {% set classe_status = "status-pago" %}
+                {% elif not pg.data_pago or pg.data_pago == '' %}
+                    {% if pg.data_venc %}
+                        {# Lógica de status simplificada no model seria melhor, mas mantemos aqui por compatibilidade #}
+                        {% set d_sep = '/' if '/' in pg.data_venc else '-' %}
+                        {% set v = pg.data_venc.split(d_sep) %}
+                        {% if v|length == 3 %}
+                            {% set v_ord = (v[0]+v[1]+v[2]) if d_sep == '-' else (v[2]+v[1]+v[0]) %}
+                            {% set hoje_str = now.strftime('%d/%m/%Y') %}
+                            {% set h = hoje_str.split('/') %}
+                            {% set h_ord = h[2]+h[1]+h[0] %}
+                            {% if v_ord|int < h_ord|int %}
+                                {% set classe_status = "status-atrasado" %}
+                            {% else %}
+                                {% set classe_status = "status-pendente" %}
+                            {% endif %}
+                        {% endif %}
+                    {% endif %}
+                {% endif %}
+                
+                <tr class="{{ classe_status }}" 
+                    onclick="selecionarLinhaClick(this)" 
+                    ondblclick="selecionarLinha(this)"
+                    data-cod="{{ pg.cod }}"
+                    data-mes_ano="{{ pg.mes_ano or '' }}"
+                    data-competencia="{{ pg.competencia or '' }}"
+                    data-conta="{{ pg.conta or '' }}"
+                    data-instituicao="{{ pg.instituicao or '' }}"
+                    data-fonte_paga="{{ pg.fonte_paga or '' }}"
+                    data-data_venc="{{ pg.data_venc or '' }}"
+                    data-valor_pagar="{{ pg.valor_pagar or 0 }}"
+                    data-data_pago="{{ pg.data_pago or '' }}"
+                    data-valor_pago="{{ pg.valor_pago or 0 }}"
+                    data-parcela="{{ pg.parcela or '' }}"
+                    data-observacao="{{ pg.observacao or '' }}"
+                    data-tipo="{{ pg.receita_despesa or 'D' }}"
+                    data-categoria="{{ pg.categoria_ref.nome if pg.categoria_ref else '' }}"
+                    data-tem-anexo="{{ 'true' if pg.documentos else 'false' }}"
+                    data-doc-id="{{ pg.documentos[0].id if pg.documentos else '' }}"
+                    data-juros="{{ pg.juros or 0 }}"
+                    data-desconto="{{ pg.desconto or 0 }}">
+                    
+                    <td>{{ pg.mes_ano }}</td>
+                    <td class="fw-bold">{{ pg.conta }}</td>
+                    <td>{{ pg.instituicao or '-' }}</td>
+                    <td>{{ pg.fonte_paga or '-' }}</td>
+                    <td>{{ pg.categoria_ref.nome if pg.categoria_ref else '-' }}</td>
+                    <td>{{ pg.data_venc or '-' }}</td>
+                    <td class="text-end">R$ {{ "%.2f"|format(pg.valor_pagar or 0)|replace('.', ',') }}</td>
+                    <td>{{ pg.data_pago or '-' }}</td>
+                    <td class="text-end">R$ {{ "%.2f"|format(pg.valor_pago or 0)|replace('.', ',') }}</td>
+                    <td class="text-center">{{ pg.parcela or '-' }}</td>
+                    <td title="{{ pg.observacao or '' }}">{{ (pg.observacao or '')[:20] }}{{ '...' if pg.observacao and pg.observacao|length > 20 }}</td>
+                    <td class="text-center">
+                        {% if pg.documentos %}
+                            <a href="{{ url_for('main.visualizar_documento', doc_id=pg.documentos[0].id) }}" target="_blank">
+                                <i class="bi bi-file-earmark-pdf-fill text-danger fs-5"></i>
+                            </a>
+                        {% else %}
+                            <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <div class="footer-totals mt-3 p-3 bg-white border rounded-3 d-flex justify-content-between align-items-center flex-wrap gap-3 shadow-sm animate-fade-in">
+        <div class="d-flex gap-4 align-items-center">
+            <span class="text-secondary small fw-bold text-uppercase letter-spacing-1">Resumo Filtrado:</span>
+            <div class="d-flex flex-column">
+                <span class="text-muted extra-small text-uppercase">A Pagar</span>
+                <span class="text-danger fw-bold">R$ {{ "%.2f"|format(total_a_pagar)|replace('.', ',') }}</span>
+            </div>
+            <div class="vr"></div>
+            <div class="d-flex flex-column">
+                <span class="text-muted extra-small text-uppercase">Receitas</span>
+                <span class="text-success fw-bold">R$ {{ "%.2f"|format(total_receitas)|replace('.', ',') }}</span>
+            </div>
+            <div class="vr"></div>
+            <div class="d-flex flex-column">
+                <span class="text-muted extra-small text-uppercase">Pagos</span>
+                <span class="text-primary fw-bold">R$ {{ "%.2f"|format(total_pago)|replace('.', ',') }}</span>
+            </div>
+            <div class="vr"></div>
+            <div class="d-flex flex-column">
+                <span class="text-muted extra-small text-uppercase">Saldo Líquido</span>
+                <span class="{% if total_saldo >= 0 %}text-success{% else %}text-danger{% endif %} fw-black fs-5">
+                    R$ {{ "%.2f"|format(total_saldo)|replace('.', ',') }}
+                </span>
+            </div>
+        </div>
+
+        <!-- Paginação Bootstrap -->
+        {% if pagination and pagination.pages > 1 %}
+        <nav aria-label="Navegação de páginas">
+            <ul class="pagination pagination-sm mb-0">
+                <li class="page-item {{ 'disabled' if not pagination.has_prev }}">
+                    <a class="page-item" href="{{ url_for('main.index', page=pagination.prev_num, **request.args) }}" tabindex="-1">Anterior</a>
+                </li>
+                
+                {% for p in pagination.iter_pages(left_edge=2, left_current=2, right_current=3, right_edge=2) %}
+                    {% if p %}
+                        <li class="page-item {{ 'active' if p == pagination.page }}">
+                            <a class="page-link" href="{{ url_for('main.index', page=p, **request.args) }}">{{ p }}</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                {% endfor %}
+
+                <li class="page-item {{ 'disabled' if not pagination.has_next }}">
+                    <a class="page-link" href="{{ url_for('main.index', page=pagination.next_num, **request.args) }}">Próxima</a>
+                </li>
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+    
+    {% else %}
+    <div class="text-center py-5">
+        <i class="bi bi-search display-1 text-muted"></i>
+        <h4 class="mt-3 text-secondary">Nenhum registro encontrado</h4>
+        <p class="text-muted">Ajuste os filtros e tente novamente.</p>
+    </div>
+    {% endif %}
+</div>

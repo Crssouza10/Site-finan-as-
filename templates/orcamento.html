@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-white fw-bold"><i class="bi bi-bank me-2"></i>Controle de Orçamento</h2>
+        
+        <div class="d-flex gap-2">
+            <input type="month" id="filtroMesAno" class="form-control form-control-sm w-auto" 
+                   value="{{ mes_ano_selecionado[3:7] }}-{{ mes_ano_selecionado[0:2] }}" 
+                   onchange="mudarPeriodo(this.value)">
+            <a href="{{ url_for('main.index') }}" class="btn btn-outline-light btn-sm">
+                <i class="bi bi-arrow-left"></i> Voltar
+            </a>
+        </div>
+    </div>
+
+    <!-- Cards de Resumo -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card bg-dark text-white border-primary shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h6 class="text-white-50 small text-uppercase">Meta Global</h6>
+                    <h2 class="fw-bold text-primary">R$ {{ "%.2f"|format(total_meta)|replace('.', ',') }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-dark text-white border-warning shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h6 class="text-white-50 small text-uppercase">Realizado Total</h6>
+                    <h2 class="fw-bold text-warning">R$ {{ "%.2f"|format(total_realizado)|replace('.', ',') }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-dark text-white border-{{ 'success' if total_meta - total_realizado >= 0 else 'danger' }} shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h6 class="text-white-50 small text-uppercase">Disponível</h6>
+                    <h2 class="fw-bold text-{{ 'success' if total_meta - total_realizado >= 0 else 'danger' }}">
+                        R$ {{ "%.2f"|format(total_meta - total_realizado)|replace('.', ',') }}
+                    </h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabela de Metas -->
+    <div class="card bg-dark text-white border-secondary shadow">
+        <div class="card-header bg-dark border-secondary d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Metas por Categoria</h5>
+            <small class="text-white-50">Clique no valor da meta para editar</small>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-dark table-hover mb-0 align-middle">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">Categoria</th>
+                            <th class="text-end" style="width: 180px;">Meta (R$)</th>
+                            <th class="text-end" style="width: 180px;">Realizado (R$)</th>
+                            <th class="text-center" style="width: 300px;">Progresso</th>
+                            <th class="text-end pe-4" style="width: 150px;">Desvio</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for d in dados %}
+                        <tr>
+                            <td class="ps-4 fw-bold text-info">{{ d.nome }}</td>
+                            <td class="text-end">
+                                <input type="text" class="form-control form-control-sm bg-transparent text-white border-0 text-end fw-bold" 
+                                       value="{{ "%.2f"|format(d.meta)|replace('.', ',') }}"
+                                       onblur="salvarMeta({{ d.categoria_id }}, this.value)"
+                                       onkeydown="if(event.key==='Enter') this.blur()">
+                            </td>
+                            <td class="text-end">R$ {{ "%.2f"|format(d.realizado)|replace('.', ',') }}</td>
+                            <td>
+                                <div class="progress bg-secondary" style="height: 12px; border-radius: 6px;">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-{{ d.status }}" 
+                                         role="progressbar" 
+                                         style="width: {{ d.percentual }}%" 
+                                         aria-valuenow="{{ d.percentual }}" aria-valuemin="0" aria-valuemax="100">
+                                    </div>
+                                </div>
+                                <div class="text-center mt-1" style="font-size: 0.7rem;">
+                                    {{ "%.1f"|format(d.percentual_real) }}% utilizado
+                                </div>
+                            </td>
+                            <td class="text-end pe-4">
+                                <span class="badge bg-{{ 'success' if d.desvio >= 0 else 'danger' }}">
+                                    R$ {{ "%.2f"|format(d.desvio)|replace('.', ',') }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function mudarPeriodo(valor) {
+    if(!valor) return;
+    const [ano, mes] = valor.split('-');
+    window.location.href = `?mes_ano=${mes}/${ano}`;
+}
+
+async function salvarMeta(catId, valorStr) {
+    const valor = parseFloat(valorStr.replace('.', '').replace(',', '.'));
+    const mesAno = "{{ mes_ano_selecionado }}";
+    
+    try {
+        const response = await fetch('/api/orcamento/save', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                categoria_id: catId,
+                mes_ano: mesAno,
+                valor: valor
+            })
+        });
+        
+        const result = await response.json();
+        if(result.success) {
+            // Recarrega para ver totais atualizados
+            window.location.reload();
+        } else {
+            alert('Erro ao salvar: ' + result.error);
+        }
+    } catch(err) {
+        console.error(err);
+        alert('Erro de conexão ao salvar meta.');
+    }
+}
+</script>
+
+<style>
+.navbar-custom { display: none !important; } /* Esconde navbar padrão se quiser focar no orçamento */
+body { background-color: #0f111a; }
+.card { border-radius: 12px; }
+.progress { box-shadow: inset 0 1px 2px rgba(0,0,0,0.5); }
+.table-hover tbody tr:hover { background-color: rgba(255,255,255,0.05); }
+input[type="month"]::-webkit-calendar-picker-indicator { filter: invert(1); }
+</style>
+{% endblock %}

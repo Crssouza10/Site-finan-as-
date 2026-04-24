@@ -1,0 +1,184 @@
+:root {
+    --primary: #3b82f6;
+    --primary-dark: #1d4ed8;
+    --secondary: #64748b;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --info: #06b6d4;
+    --dark: #0f172a;
+    --darker: #020617;
+    --light: #f8fafc;
+    --gray-100: #f1f5f9;
+    --gray-200: #e2e8f0;
+    --gray-800: #1e293b;
+    --glass: rgba(255, 255, 255, 0.7);
+    --glass-dark: rgba(15, 23, 42, 0.8);
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-md: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
+body { 
+    background-color: var(--gray-100); 
+    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    color: var(--gray-800);
+}
+
+/* Navbar Premium */
+.navbar-top {
+    background: var(--darker);
+    color: white;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    backdrop-filter: blur(10px);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.navbar-brand { 
+    font-weight: 800; 
+    letter-spacing: -0.025em;
+    font-size: 1.25rem;
+}
+
+.bg-primary-gradient {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+}
+
+/* Action Bar with Glassmorphism */
+.action-bar-container {
+    background: var(--glass-dark);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: var(--shadow-lg);
+    border-radius: 1rem;
+}
+
+/* Custom Cards */
+.card {
+    border: 1px solid var(--gray-200);
+    border-radius: 0.75rem;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary);
+}
+
+.card-header {
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+}
+
+/* Forms */
+.form-label { 
+    font-weight: 600; 
+    font-size: 0.75rem; 
+    color: var(--secondary); 
+    text-transform: uppercase;
+    margin-bottom: 0.25rem; 
+}
+
+.form-control, .form-select { 
+    font-size: 0.875rem; 
+    border-radius: 0.5rem;
+    border: 1px solid var(--gray-200);
+    padding: 0.5rem 0.75rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-control:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Table Styles */
+.table-responsive { 
+    background: white; 
+    border-radius: 0.75rem; 
+    box-shadow: var(--shadow);
+    border: 1px solid var(--gray-200);
+}
+
+.table thead { 
+    background-color: var(--gray-100); 
+    color: var(--secondary);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.table th {
+    border-bottom: 2px solid var(--gray-200);
+    padding: 0.75rem;
+}
+
+.table td {
+    padding: 0.75rem;
+    vertical-align: middle;
+}
+
+.status-pago { background-color: #ecfdf5 !important; color: #065f46 !important; }
+.status-atrasado { background-color: #fef2f2 !important; color: #991b1b !important; }
+.status-pendente { background-color: #fffbeb !important; color: #92400e !important; }
+
+/* AI Section Branding */
+.ia-badge {
+    background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 2rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+/* Buttons */
+.btn {
+    border-radius: 0.5rem;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.btn-primary { background-color: var(--primary); border: none; }
+.btn-primary:hover { background-color: var(--primary-dark); transform: scale(1.02); }
+
+/* Animation */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.4s ease-out forwards;
+}
+
+/* Utilidades de Tipografia Premium */
+.fw-black { font-weight: 900; }
+.fw-800 { font-weight: 800; }
+.extra-small { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.025em; }
+.letter-spacing-1 { letter-spacing: 1px; }
+
+.vr {
+    width: 1px;
+    height: 30px;
+    background-color: var(--gray-200);
+    opacity: 1;
+}
+
+/* Ajustes no Rodapé de Totais */
+.footer-totals .text-muted {
+    color: var(--secondary) !important;
+}
+
+

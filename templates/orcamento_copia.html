@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meu Orçamento - Gestão de Pagamentos</title>
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        /* Menu superior simplificado apenas com logo e título */
+        .navbar-simple {
+            background-color: #2c3e50;
+            padding: 0.75rem 1.5rem;
+        }
+
+        .navbar-brand {
+            color: white !important;
+            font-weight: bold;
+            font-size: 1.2rem;
+            text-decoration: none;
+        }
+
+        .navbar-brand:hover {
+            opacity: 0.9;
+        }
+
+        .container-fluid {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 1.5rem;
+        }
+
+        .filters-container {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: flex-end;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        button.btn-search {
+            background-color: #2c3e50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        button.btn-search:hover {
+            opacity: 0.9;
+        }
+
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            text-align: center;
+            border-top: 4px solid transparent;
+        }
+
+        .card.receitas { border-top-color: #27ae60; }
+        .card.despesas { border-top-color: #c0392b; }
+        .card.saldo { border-top-color: #3498db; }
+
+        .card h3 {
+            font-size: 0.9rem;
+            color: #777;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .card .value {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+
+        .text-green { color: #27ae60; }
+        .text-red { color: #c0392b; }
+        .text-blue { color: #3498db; }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .chart-container, .table-container {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        h2 {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: #2c3e50;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            color: #555;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        td {
+            font-size: 0.9rem;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            color: #c0392b;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- MENU SUPERIOR SIMPLIFICADO (apenas logo + link para home) -->
+    <nav class="navbar navbar-simple">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('main.index') }}">
+                <i class="bi bi-briefcase me-2"></i>Gestão de Pagamentos
+            </a>
+        </div>
+    </nav>
+
+    <main class="container mt-4">
+        <h1>Meu Orçamento</h1>
+
+        <!-- FILTROS -->
+        <div class="filters-container">
+            <div class="form-group">
+                <label for="filter-desc">Descrição da Conta</label>
+                <input type="text" id="filter-desc" placeholder="Ex: Internet, Salário...">
+            </div>
+
+            <div class="form-group">
+                <label for="filter-type">Tipo de Operação (Categoria)</label>
+                <select id="filter-type">
+                    <option value="">Todas as categorias</option>
+                    <!-- Preenchido via JS -->
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="filter-month">Mês/Ano</label>
+                <select id="filter-month">
+                    <!-- Preenchido dinamicamente via JS -->
+                </select>
+            </div>
+
+            <!-- Botão Limpar -->
+            <button class="btn-search" onclick="clearFilters()" style="background-color: #6c757d;">
+                <i class="bi bi-eraser"></i> Limpar
+            </button>
+
+            <!-- Botão Buscar -->
+            <button class="btn-search" onclick="applyFilters()">
+                <i class="bi bi-search"></i> Buscar
+            </button>
+        </div>
+
+        <!-- CARDS DE RESUMO -->
+        <div class="summary-cards">
+            <div class="card receitas">
+                <h3>Receitas</h3>
+                <div class="value text-green" id="total-receitas">R$ 0,00</div>
+            </div>
+            <div class="card despesas">
+                <h3>Despesas</h3>
+                <div class="value text-red" id="total-despesas">R$ 0,00</div>
+            </div>
+            <div class="card saldo">
+                <h3>Saldo no Período</h3>
+                <div class="value text-blue" id="total-saldo">R$ 0,00</div>
+            </div>
+        </div>
+
+        <!-- GRÁFICOS E TABELA -->
+        <div class="dashboard-grid">
+            <div class="chart-container">
+                <h2>Despesas por Categoria</h2>
+                <canvas id="expenseChart"></canvas>
+            </div>
+
+            <div class="table-container">
+                <h2>Lançamentos do Período</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Descrição</th>
+                            <th>Categoria</th>
+                            <th>Valor</th>
+                            <th>Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transactions-table-body">
+                        <!-- Linhas inseridas via JS -->
+                    </tbody>
+                </table>
+                <div id="empty-msg" class="empty-state" style="display: none;">
+                    Nenhum lançamento encontrado para este filtro.
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // --- DADOS SIMULADOS (como banco vazio) ---
+        const mockData = [
+            { id: 1, date: '2026-03-05', description: 'Pagamento Internet', category: 'Utilidades', type: 'expense', amount: 150.00 },
+            { id: 2, date: '2026-03-10', description: 'Supermercado Mensal', category: 'Alimentação', type: 'expense', amount: 850.50 },
+            { id: 3, date: '2026-03-15', description: 'Salário', category: 'Salário', type: 'income', amount: 3500.00 },
+            { id: 4, date: '2026-03-20', description: 'Uber Viagem', category: 'Transporte', type: 'expense', amount: 45.90 },
+            { id: 5, date: '2026-04-02', description: 'Aluguel', category: 'Moradia', type: 'expense', amount: 1200.00 },
+            { id: 6, date: '2026-04-05', description: 'Academia', category: 'Lazer', type: 'expense', amount: 120.00 },
+            { id: 7, date: '2026-04-15', description: 'Salário', category: 'Salário', type: 'income', amount: 3500.00 },
+            { id: 8, date: '2026-02-10', description: 'Conta de Luz', category: 'Utilidades', type: 'expense', amount: 230.00 },
+            { id: 9, date: '2026-01-15', description: 'Salário Janeiro', category: 'Salário', type: 'income', amount: 3500.00 },
+            { id: 10, date: '2026-05-01', description: 'Plano de Saúde', category: 'Saúde', type: 'expense', amount: 450.00 }
+        ];
+
+        let transactions = [...mockData];
+        let expenseChartInstance = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            populateMonthFilter();
+            populateCategoryFilter();
+            applyFilters();
+        });
+
+        function populateMonthFilter() {
+            const monthSelect = document.getElementById('filter-month');
+            monthSelect.innerHTML = '<option value="">Todos os meses</option>';
+
+            const monthsSet = new Set();
+            transactions.forEach(t => {
+                const dateObj = new Date(t.date);
+                const key = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}`;
+                monthsSet.add(key);
+            });
+
+            const sortedMonths = Array.from(monthsSet).sort().reverse();
+
+            const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+
+            sortedMonths.forEach(monthKey => {
+                const [year, month] = monthKey.split('-');
+                const option = document.createElement('option');
+                option.value = monthKey;
+                option.textContent = `${monthNames[parseInt(month) - 1]} ${year}`;
+                monthSelect.appendChild(option);
+            });
+
+            if (sortedMonths.length > 0) {
+                monthSelect.value = sortedMonths[0]; // Seleciona o mais recente
+            }
+        }
+
+        function populateCategoryFilter() {
+            const catSelect = document.getElementById('filter-type');
+            catSelect.innerHTML = '<option value="">Todas as categorias</option>';
+
+            const categoriesSet = new Set();
+            transactions.forEach(t => categoriesSet.add(t.category));
+
+            const sortedCats = Array.from(categoriesSet).sort();
+
+            sortedCats.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat;
+                option.textContent = cat;
+                catSelect.appendChild(option);
+            });
+        }
+
+        function applyFilters() {
+            const descInput = document.getElementById('filter-desc').value.toLowerCase();
+            const typeInput = document.getElementById('filter-type').value;
+            const monthInput = document.getElementById('filter-month').value;
+
+            const filteredData = transactions.filter(item => {
+                const matchDesc = item.description.toLowerCase().includes(descInput);
+                const matchType = typeInput === "" || item.category === typeInput;
+
+                const itemDate = new Date(item.date);
+                const itemKey = `${itemDate.getFullYear()}-${String(itemDate.getMonth() + 1).padStart(2, '0')}`;
+                const matchMonth = monthInput === "" || itemKey === monthInput;
+
+                return matchDesc && matchType && matchMonth;
+            });
+
+            updateUI(filteredData);
+        }
+
+        function updateUI(data) {
+            let totalRec = 0;
+            let totalDesp = 0;
+
+            data.forEach(item => {
+                if (item.type === 'income') totalRec += item.amount;
+                else totalDesp += item.amount;
+            });
+
+            document.getElementById('total-receitas').textContent = formatCurrency(totalRec);
+            document.getElementById('total-despesas').textContent = formatCurrency(totalDesp);
+            document.getElementById('total-saldo').textContent = formatCurrency(totalRec - totalDesp);
+
+            const tbody = document.getElementById('transactions-table-body');
+            const emptyMsg = document.getElementById('empty-msg');
+            tbody.innerHTML = '';
+
+            if (data.length === 0) {
+                emptyMsg.style.display = 'block';
+            } else {
+                emptyMsg.style.display = 'none';
+                data.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                data.forEach(item => {
+                    const tr = document.createElement('tr');
+                    const dateFormatted = new Date(item.date).toLocaleDateString('pt-BR');
+                    const amountClass = item.type === 'income' ? 'text-green' : 'text-red';
+                    const amountSign = item.type === 'income' ? '' : '- ';
+
+                    tr.innerHTML = `
+                        <td>${dateFormatted}</td>
+                        <td>${item.description}</td>
+                        <td>${item.category}</td>
+                        <td class="${amountClass}">${amountSign}${formatCurrency(item.amount)}</td>
+                        <td><button class="action-btn" onclick="alert('Excluir ID: ${item.id}')">✕</button></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            updateChart(data);
+        }
+
+        function updateChart(data) {
+            const ctx = document.getElementById('expenseChart').getContext('2d');
+
+            const expensesByCat = {};
+            data.forEach(item => {
+                if (item.type === 'expense') {
+                    if (!expensesByCat[item.category]) expensesByCat[item.category] = 0;
+                    expensesByCat[item.category] += item.amount;
+                }
+            });
+
+            const labels = Object.keys(expensesByCat);
+            const values = Object.values(expensesByCat);
+
+            const colors = ['#e74c3c', '#f39c12', '#2ecc71', '#3498db', '#9b59b6', '#34495e'];
+
+            if (expenseChartInstance) {
+                expenseChartInstance.destroy();
+            }
+
+            if (labels.length === 0) {
+                return;
+            }
+
+            expenseChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: colors.slice(0, labels.length),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        }
+                    }
+                }
+            });
+        }
+
+        function formatCurrency(value) {
+            return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        function clearFilters() {
+            // Limpar campos de texto
+            document.getElementById('filter-desc').value = '';
+            
+            // Resetar selects para a primeira opção (todos)
+            document.getElementById('filter-type').selectedIndex = 0;
+            document.getElementById('filter-month').selectedIndex = 0;
+            
+            // Recarregar todos os dados
+            applyFilters();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,93 @@
+<div class="d-flex align-items-center flex-wrap gap-2 animate-fade-in">
+    <!-- Grupos de Menus -->
+    <div class="btn-group shadow-sm">
+        <button type="button" class="btn btn-dark dropdown-toggle btn-sm border-secondary" data-bs-toggle="dropdown">
+            <i class="bi bi-list-ul me-1"></i> RELATÓRIOS
+        </button>
+        <ul class="dropdown-menu shadow-lg">
+            <li><a class="dropdown-item" href="#" onclick="gerarRelatorio('mensal')"><i class="bi bi-calendar-event me-2"></i>Mensal</a></li>
+            <li><a class="dropdown-item" href="#" onclick="gerarRelatorio('conta')"><i class="bi bi-bank me-2"></i>Por Conta</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="#" onclick="gerarRelatorio('anual')"><i class="bi bi-calendar-check me-2"></i>Anual Detalhado</a></li>
+            <li><a class="dropdown-item" href="#" onclick="gerarRelatorio('receita_despesa')"><i class="bi bi-bar-chart me-2"></i>Anual Receita/Despesa</a></li>
+            <li><a class="dropdown-item text-danger fw-bold" href="{{ url_for('main.atrasados') }}">
+                <i class="bi bi-exclamation-octagon me-2"></i>Contas em Atraso
+            </a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="#" onclick="abrirConfigEmail()">
+                <i class="bi bi-envelope-gear me-2"></i>Configurar E-mail
+            </a></li>
+        </ul>
+    </div>
+
+    <div class="btn-group shadow-sm">
+        <button type="button" class="btn btn-dark dropdown-toggle btn-sm border-secondary" data-bs-toggle="dropdown">
+            <i class="bi bi-graph-up me-1"></i> DASHBOARDS
+        </button>
+        <ul class="dropdown-menu shadow-lg">
+            <li><a class="dropdown-item" href="{{ url_for('dashboard.dashboard') }}"><i class="bi bi-speedometer2 me-2"></i>Geral</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('dashboard.dashboard_contas') }}"><i class="bi bi-pie-chart me-2"></i>Por Conta</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item fw-bold text-primary" href="{{ url_for('extrato.importar_extrato') }}">
+                <i class="bi bi-bank me-2"></i>Conciliação Bancária
+            </a></li>
+        </ul>
+    </div>
+
+    <div class="btn-group shadow-sm">
+        <button type="button" class="btn btn-dark dropdown-toggle btn-sm border-secondary" data-bs-toggle="dropdown">
+            <i class="bi bi-funnel me-1"></i> SITUAÇÃO
+        </button>
+        <ul class="dropdown-menu shadow-lg">
+            <li><a class="dropdown-item" href="?status=pago"><i class="bi bi-check-circle text-success me-2"></i>Somente Pagas</a></li>
+            <li><a class="dropdown-item" href="?status=pendente"><i class="bi bi-clock text-warning me-2"></i>Pendentes</a></li>
+            <li><a class="dropdown-item" href="?status=atrasado"><i class="bi bi-x-circle text-danger me-2"></i>Atrasadas</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="{{ url_for('main.index') }}"><i class="bi bi-eye me-2"></i>Ver Todas</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-primary fw-bold" href="#" onclick="lancarMesSeguinte()">
+                <i class="bi bi-calendar-plus me-1"></i> Lançar Mês Seguinte
+            </a></li>
+        </ul>
+    </div>
+
+    <!-- Filtros e CRUD -->
+    <div class="crud-actions d-flex align-items-center gap-2 flex-wrap">
+        <div class="input-group input-group-sm" style="width: auto;">
+            <span class="input-group-text bg-dark text-white-50 border-secondary"><i class="bi bi-calendar-range"></i></span>
+            <input type="date" name="data_inicio" class="form-control bg-dark text-white border-secondary" style="width: 130px;" value="{{ request.args.get('data_inicio', '') }}">
+            <input type="date" name="data_fim" class="form-control bg-dark text-white border-secondary" style="width: 130px;" value="{{ request.args.get('data_fim', '') }}">
+        </div>
+        
+        <div class="btn-group shadow-sm">
+            <button type="button" class="btn btn-outline-light btn-sm border-secondary" title="Limpar Filtros" onclick="limparBuscaGeral()">
+                <i class="bi bi-eraser"></i>
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="buscarRegistros()">
+                <i class="bi bi-search me-1"></i> Buscar
+            </button>
+        </div>
+
+        <div class="btn-group shadow-sm">
+            <button type="submit" class="btn btn-primary btn-sm" form="mainForm">
+                <i class="bi bi-plus-lg me-1"></i> Novo
+            </button>
+            <button type="button" class="btn btn-warning btn-sm" onclick="executarAlteracao()" id="btnAlterar" disabled title="Alterar">
+                <i class="bi bi-pencil-square"></i>
+            </button>
+            <button type="button" class="btn btn-danger btn-sm" onclick="confirmarExclusao()" id="btnApagar" disabled title="Apagar">
+                <i class="bi bi-trash"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Container de Backup -->
+    <div class="backup-container d-flex gap-1 p-1 rounded-pill bg-dark border border-secondary shadow-sm ms-auto">
+        <button type="button" class="btn btn-outline-info btn-xs rounded-pill px-3" onclick="fazerBackupManual()" id="btnBackup" title="Backup Agora">
+            <i class="bi bi-cloud-arrow-up-fill me-1"></i> BACKUP
+        </button>
+        <a href="/backup" class="btn btn-outline-light btn-xs rounded-pill px-3" title="Gerenciar Backups">
+            <i class="bi bi-folder2-open"></i>
+        </a>
+    </div>
+</div>

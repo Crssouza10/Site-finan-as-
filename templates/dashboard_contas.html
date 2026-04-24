@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Situação - Contas a Pagar</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+        .navbar { background: linear-gradient(135deg, #2c3e50, #34495e); }
+        .card { border: none; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); }
+        .card-header { background: linear-gradient(135deg, #2c3e50, #34495e); color: white; border-radius: 15px 15px 0 0 !important; }
+        .table-success { background-color: #d4edda !important; }
+        .table-warning { background-color: #fff3cd !important; }
+        .table-danger { background-color: #f8d7da !important; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+        <a class="navbar-brand" href="{{ url_for('main.index') }}">
+            <i class="bi bi-arrow-left me-2"></i>Voltar ao Início
+        </a>
+        <div class="navbar-nav ms-auto">
+            <a class="nav-link" href="{{ url_for('main.index') }}">Início</a>
+            <a class="nav-link active" href="{{ url_for('dashboard.dashboard_contas') }}">Situação</a>
+            <a class="nav-link" href="{{ url_for('dashboard.dashboard') }}">Menu Orçamento</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% if contas_hoje and contas_hoje > 0 %}
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        <strong>Atenção!</strong> Existem {{ contas_hoje }} conta(s) vencendo hoje ({{ data_hoje }})
+    </div>
+    {% endif %}
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="bi bi-receipt me-2"></i>Gestão de Pagamentos</h2>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-2">
+                    <input type="text" name="MesAno" class="form-control" placeholder="Mês/Ano" value="{{ request.args.get('MesAno', '') }}">
+                </div>
+                <div class="col-md-3">
+                    <input type="text" name="Conta" class="form-control" placeholder="Conta" value="{{ request.args.get('Conta', '') }}">
+                </div>
+                <div class="col-md-3">
+                    <input type="text" name="Instituicao" class="form-control" placeholder="Instituição" value="{{ request.args.get('Instituicao', '') }}">
+                </div>
+                <div class="col-md-2">
+                    <select name="status" class="form-select">
+                        <option value="">Todas</option>
+                        <option value="pago" {{ 'selected' if request.args.get('status') == 'pago' }}>Pagas</option>
+                        <option value="pendente" {{ 'selected' if request.args.get('status') == 'pendente' }}>Pendentes</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search me-1"></i>Buscar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <i class="bi bi-list-ul me-2"></i>Contas Registradas
+        </div>
+        <div class="card-body table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Mês/Ano</th>
+                        <th>Conta</th>
+                        <th>Instituição</th>
+                        <th>Vencimento</th>
+                        <th>Valor</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pg in pagamentos %}
+                    <tr class="{% if pg.valor_pago and pg.valor_pago > 0 %}table-success{% else %}table-warning{% endif %}">
+                        <td>{{ pg.mes_ano }}</td>
+                        <td>{{ pg.conta }}</td>
+                        <td>{{ pg.instituicao or '-' }}</td>
+                        <td>{{ pg.data_venc }}</td>
+                        <td>R$ {{ "%.2f"|format(pg.valor_pagar or 0)|replace('.', ',') }}</td>
+                        <td>
+                            {% if pg.valor_pago and pg.valor_pago > 0 %}
+                                <span class="badge bg-success">Pago</span>
+                            {% else %}
+                                <span class="badge bg-warning">Pendente</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalEditar{{ pg.cod }}">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr class="table-primary">
+                        <td colspan="4"><strong>TOTAIS</strong></td>
+                        <td><strong>R$ {{ "%.2f"|format(total_a_pagar)|replace('.', ',') }}</strong></td>
+                        <td colspan="2"><strong>Pago: R$ {{ "%.2f"|format(total_pago)|replace('.', ',') }}</strong></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modais de Edição para cada pagamento -->
+{% for pg in pagamentos %}
+<div class="modal fade" id="modalEditar{{ pg.cod }}" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form action="{{ url_for('main.alterar') }}" method="POST">
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar: {{ pg.conta }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="cod" value="{{ pg.cod }}">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Mês/Ano</label>
+                            <input type="text" name="MesAno" class="form-control" value="{{ pg.mes_ano }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Conta</label>
+                            <input type="text" name="Conta" class="form-control" value="{{ pg.conta }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Instituição</label>
+                            <input type="text" name="Instituicao" class="form-control" value="{{ pg.instituicao or '' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Data Vencimento</label>
+                            <input type="date" name="Data_venc" class="form-control" value="{{ pg.data_venc }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Valor a Pagar</label>
+                            <input type="text" name="Valor_pagar" class="form-control" value="{{ pg.valor_pagar }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Valor Pago</label>
+                            <input type="text" name="Valor_pago" class="form-control" value="{{ pg.valor_pago or '' }}">
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">Observação</label>
+                            <textarea name="Observacao" class="form-control">{{ pg.observacao or '' }}</textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

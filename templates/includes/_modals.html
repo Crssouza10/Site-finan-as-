@@ -1,0 +1,45 @@
+<!-- Modal: Configuração de E-mail -->
+<div class="modal fade" id="modalConfigEmail" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title">
+                    <i class="bi bi-envelope-gear me-2"></i>Configurar E-mail
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formConfigEmail">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">E-mail para Notificações *</label>
+                        <input type="email" class="form-control" id="inpEmailNotificacao" required>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="chkAtivarAlertas" checked>
+                            <label class="form-check-label" for="chkAtivarAlertas">Alertas automáticos diários</label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="chkAtivarBackup" checked>
+                            <label class="form-check-label" for="chkAtivarBackup">Confirmação de backup por e-mail</label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success" onclick="salvarConfigEmail()">Salvar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Botão flutuante de Configurações -->
+<button class="btn btn-warning position-fixed shadow" 
+        style="bottom: 20px; right: 20px; z-index: 1000; border-radius: 50%; width: 60px; height: 60px;"
+        onclick="abrirConfigEmail()" 
+        title="Configurar Notificações">
+    <i class="bi bi-envelope-gear fs-4"></i>
+</button>

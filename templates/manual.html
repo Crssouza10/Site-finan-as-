@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Manual Técnico da Aplicação [NOME_DA_APLICAÇÃO]">
+  <title>Manual Técnico | [NOME_DA_APLICAÇÃO] v[VERSÃO]</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --surface: #181b25;
+      --border: #2a2e3a;
+      --text: #e6e9f0;
+      --text-muted: #9ca3af;
+      --primary: #3b82f6;
+      --primary-dark: #2563eb;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --code-bg: #1e2330;
+      --font-mono: "JetBrains Mono", "Fira Code", Consolas, monospace;
+      --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      --max-width: 1100px;
+      --radius: 8px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 2rem 1rem;
+    }
+    a { color: var(--primary); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .container {
+      max-width: var(--max-width);
+      margin: 0 auto;
+    }
+
+    header {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    header h1 { font-size: 2rem; margin-bottom: 0.25rem; }
+    header p { color: var(--text-muted); }
+
+    nav.toc {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      margin-bottom: 2.5rem;
+    }
+    nav.toc h2 { margin-bottom: 0.75rem; font-size: 1.1rem; }
+    nav.toc ul { list-style: none; columns: 2; gap: 1.5rem; }
+    @media (max-width: 768px) { nav.toc ul { columns: 1; } }
+    nav.toc li { margin: 0.35rem 0; }
+    nav.toc a { color: var(--text-muted); font-size: 0.95rem; }
+    nav.toc a:hover { color: var(--primary); text-decoration: none; }
+
+    section { margin-bottom: 3rem; }
+    section h2 {
+      font-size: 1.5rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    section h3 { font-size: 1.2rem; margin: 1.5rem 0 0.75rem; }
+    section p, section ul, section ol { margin-bottom: 1rem; }
+    section ul, section ol { padding-left: 1.5rem; }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+      margin-bottom: 1.25rem;
+    }
+    .card strong { color: var(--primary); }
+
+    .alert {
+      padding: 0.75rem 1rem;
+      border-radius: var(--radius);
+      margin-bottom: 1.25rem;
+      font-weight: 500;
+    }
+    .alert.info { background: #1e3a8a33; border-left: 4px solid var(--primary); }
+    .alert.warning { background: #78350f33; border-left: 4px solid var(--warning); }
+    .alert.danger { background: #7f1d1d33; border-left: 4px solid var(--danger); }
+
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+    }
+    code { font-family: var(--font-mono); background: #232734; padding: 0.2em 0.4em; border-radius: 4px; font-size: 0.9em; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1.5rem;
+      font-size: 0.95rem;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 0.6rem 0.8rem;
+      text-align: left;
+    }
+    th { background: var(--surface); font-weight: 600; }
+
+    footer {
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      text-align: center;
+    }
+
+    @media print {
+      body { background: #fff; color: #000; }
+      .toc, footer { display: none; }
+      pre, .card, table { border-color: #ccc; background: #f9f9f9; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Manual Técnico</h1>
+      <p><strong>Aplicação:</strong> [NOME_DA_APLICAÇÃO] | <strong>Versão:</strong> [VERSÃO] | <strong>Última Atualização:</strong> [DD/MM/AAAA]</p>
+    </header>
+
+    <nav class="toc" aria-label="Índice">
+      <h2>📑 Índice</h2>
+      <ul>
+        <li><a href="#visao-geral">1. Visão Geral</a></li>
+        <li><a href="#arquitetura">2. Arquitetura & Stack</a></li>
+        <li><a href="#requisitos">3. Requisitos & Instalação</a></li>
+        <li><a href="#configuracao">4. Configuração</a></li>
+        <li><a href="#api-endpoints">5. API & Endpoints</a></li>
+        <li><a href="#banco-dados">6. Banco de Dados</a></li>
+        <li><a href="#deploy">7. Deploy & CI/CD</a></li>
+        <li><a href="#monitoramento">8. Monitoramento & Logs</a></li>
+        <li><a href="#troubleshooting">9. Troubleshooting</a></li>
+        <li><a href="#seguranca">10. Segurança & Compliance</a></li>
+        <li><a href="#changelog">11. Changelog</a></li>
+      </ul>
+    </nav>
+
+    <main>
+      <section id="visao-geral">
+        <h2>1. Visão Geral</h2>
+        <p>[Descreva o propósito da aplicação, público-alvo, problemas que resolve e escopo técnico.]</p>
+        <div class="alert info">💡 <strong>Dica:</strong> Inclua aqui um link para o repositório, documentação de negócio ou protótipo, se aplicável.</div>
+      </section>
+
+      <section id="arquitetura">
+        <h2>2. Arquitetura & Stack</h2>
+        <h3>2.1 Tecnologias</h3>
+        <table>
+          <tr><th>Camada</th><th>Tecnologia</th><th>Versão</th><th>Função</th></tr>
+          <tr><td>Frontend</td><td>[Ex: React/Vue/Angular]</td><td>[X.Y.Z]</td><td>[Interface/State Management]</td></tr>
+          <tr><td>Backend</td><td>[Ex: Node.js/Python/Java]</td><td>[X.Y.Z]</td><td>[API/Regras de Negócio]</td></tr>
+          <tr><td>Banco de Dados</td><td>[Ex: PostgreSQL/MongoDB]</td><td>[X.Y.Z]</td><td>[Persistência]</td></tr>
+          <tr><td>Infraestrutura</td><td>[Ex: Docker/AWS/K8s]</td><td>[X.Y.Z]</td><td>[Orquestração/Deploy]</td></tr>
+        </table>
+
+        <h3>2.2 Diagrama de Arquitetura</h3>
+        <pre><code>[Insira aqui a representação textual ou link para o diagrama (Mermaid, Draw.io, etc.)]</code></pre>
+      </section>
+
+      <section id="requisitos">
+        <h2>3. Requisitos & Instalação</h2>
+        <h3>3.1 Requisitos Mínimos</h3>
+        <ul>
+          <li>SO: [Linux/Windows/macOS]</li>
+          <li>RAM: [X GB] | CPU: [X núcleos]</li>
+          <li>Disk: [X GB] | Network: [Portas abertas/HTTPS]</li>
+          <li>Dependências: [Node.js X+, Docker, etc.]</li>
+        </ul>
+        <h3>3.2 Instalação Local</h3>
+        <pre><code># Exemplo genérico
+git clone https://github.com/ORG/repo.git
+cd repo
+npm install  # ou pip install -r requirements.txt, etc.
+npm run dev</code></pre>
+      </section>
+
+      <section id="configuracao">
+        <h2>4. Configuração</h2>
+        <p>A aplicação utiliza variáveis de ambiente. Crie um arquivo <code>.env</code> com base em <code>.env.example</code>.</p>
+        <table>
+          <tr><th>Variável</th><th>Obrigatória</th><th>Exemplo</th><th>Descrição</th></tr>
+          <tr><td><code>PORT</code></td><td>Não</td><td><code>3000</code></td><td>Porta de execução</td></tr>
+          <tr><td><code>DATABASE_URL</code></td><td>Sim</td><td><code>postgresql://user:pass@host:5432/db</code></td><td>String de conexão</td></tr>
+          <tr><td><code>JWT_SECRET</code></td><td>Sim</td><td><code>super-secret-key</code></td><td>Chave de assinatura</td></tr>
+          <tr><td><code>[OUTRA_VAR]</code></td><td>[Sim/Não]</td><td><code>[valor]</code></td><td>[Descrição]</td></tr>
+        </table>
+      </section>
+
+      <section id="api-endpoints">
+        <h2>5. API & Endpoints</h2>
+        <p>Base URL: <code>https://api.seudominio.com/v1</code></p>
+        <table>
+          <tr><th>Método</th><th>Endpoint</th><th>Autenticação</th><th>Descrição</th></tr>
+          <tr><td><code>GET</code></td><td><code>/recurso</code></td><td>Bearer Token</td><td>Listar itens</td></tr>
+          <tr><td><code>POST</code></td><td><code>/recurso</code></td><td>Bearer Token</td><td>Criar item</td></tr>
+          <tr><td><code>GET</code></td><td><code>/recurso/:id</code></td><td>Bearer Token</td><td>Buscar por ID</td></tr>
+        </table>
+        <div class="alert warning">⚠️ Limite de rate: [X] req/min. Respostas em JSON. Campos obrigatórios marcados com <code>*</code>.</div>
+      </section>
+
+      <section id="banco-dados">
+        <h2>6. Banco de Dados</h2>
+        <p>Engine: [PostgreSQL/MySQL/Mongo/etc.] | Migrações: [Flyway/Liquibase/Prisma/Sequelize]</p>
+        <h3>Executar Migrações</h3>
+        <pre><code>npm run db:migrate
+npm run db:seed  # opcional</code></pre>
+        <h3>Backup & Restore</h3>
+        <pre><code>pg_dump -U user dbname > backup_$(date +%F).sql
+psql -U user dbname < backup_2024-05-01.sql</code></pre>
+      </section>
+
+      <section id="deploy">
+        <h2>7. Deploy & CI/CD</h2>
+        <p>Pipeline: [GitHub Actions/GitLab CI/Jenkins] | Ambiente: [Staging/Production]</p>
+        <pre><code># Exemplo de comando de deploy
+docker compose up -d --build
+# ou
+kubectl apply -f k8s/</code></pre>
+        <div class="alert info">ℹ️ Tags <code>v*.*.*</code> disparam deploy automático. Valide logs em <code>https://monitor.seudominio.com</code>.</div>
+      </section>
+
+      <section id="monitoramento">
+        <h2>8. Monitoramento & Logs</h2>
+        <ul>
+          <li>Métricas: [Prometheus/Grafana/Datadog]</li>
+          <li>Logs centralizados: [ELK/Loki/Sentry]</li>
+          <li>Healthcheck: <code>GET /health</code> → <code>{"status":"ok","uptime":1234}</code></li>
+          <li>Alertas configurados para: [CPU > 85%, DB latency > 2s, HTTP 5xx > 1%]</li>
+        </ul>
+      </section>
+
+      <section id="troubleshooting">
+        <h2>9. Troubleshooting</h2>
+        <table>
+          <tr><th>Problema</th><th>Causa Provável</th><th>Solução</th></tr>
+          <tr><td><code>ECONNREFUSED</code></td><td>Banco fora do ar ou porta bloqueada</td><td>Verifique <code>docker ps</code> ou <code>systemctl status postgresql</code></td></tr>
+          <tr><td><code>401 Unauthorized</code></td><td>Token expirado ou inválido</td><td>Renove o token; valide <code>JWT_SECRET</code></td></tr>
+          <tr><td>Build falha em CI</td><td>Dependência incompatível</td><td>Limpe cache <code>npm ci</code> ou fixe versão no <code>package.json</code></td></tr>
+          <tr><td>[OUTRO]</td><td>[Causa]</td><td>[Solução]</td></tr>
+        </table>
+      </section>
+
+      <section id="seguranca">
+        <h2>10. Segurança & Compliance</h2>
+        <ul>
+          <li>Autenticação: [OAuth2/JWT/LDAP]</li>
+          <li>Validação de entrada: [Zod/Joi/Sanitização]</li>
+          <li>CORS, CSRF, Rate Limiting: [Configurados em: ...]</li>
+          <li>Conformidade: [LGPD/GDPR, PCI-DSS, etc.]</li>
+        </ul>
+        <div class="alert danger">🔒 Nunca commitar <code>.env</code> ou chaves de produção. Rotação de secrets a cada 90 dias.</div>
+      </section>
+
+      <section id="changelog">
+        <h2>11. Changelog</h2>
+        <table>
+          <tr><th>Versão</th><th>Data</th><th>Alterações</th></tr>
+          <tr><td><code>[VERSÃO]</code></td><td>[DD/MM/AAAA]</td><td>• Atualização inicial do manual<br>• [Feature X]<br>• [Bugfix Y]</td></tr>
+          <tr><td><code>[VERSÃO_ANTERIOR]</code></td><td>[DD/MM/AAAA]</td><td>• [Lista de mudanças]</td></tr>
+        </table>
+      </section>
+    </main>
+
+    <footer>
+      <p>© [ANO] [NOME_DA_EMPRESA/ORG] | Manual Técnico da Aplicação [NOME] | Mantido por: [EQUIPE/CONTATO]</p>
+    </footer>
+  </div>
+</body>
+</html>
