@@ -31,7 +31,12 @@ def create_app():
     
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
-    app.config['UPLOAD_FOLDER'] = os.path.join(os.getcwd(), 'uploads')
+    # Verifica se está rodando no Vercel (onde apenas /tmp é gravável)
+    if os.environ.get('VERCEL') == '1':
+        app.config['UPLOAD_FOLDER'] = '/tmp/uploads'
+    else:
+        app.config['UPLOAD_FOLDER'] = os.path.join(os.getcwd(), 'uploads')
+    
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
     # Inicialização DB
