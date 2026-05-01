@@ -28,7 +28,6 @@
             scroll-behavior: smooth;
         }
 
-        /* Hero Moderno */
         .hero-section {
             min-height: 100vh;
             background: radial-gradient(circle at top right, rgba(59, 130, 246, 0.1), transparent),
@@ -71,7 +70,6 @@
             -webkit-text-fill-color: transparent;
         }
 
-        /* Cards de Funcionalidades (As Joias da Coroa) */
         .feature-card {
             background: var(--glass);
             border: 1px solid var(--glass-border);
@@ -101,7 +99,6 @@
             box-shadow: 0 10px 20px rgba(59, 130, 246, 0.2);
         }
 
-        /* Login Card */
         .login-card {
             background: var(--bg-card);
             backdrop-filter: blur(20px);
@@ -141,13 +138,24 @@
 
         .animate-fade-in { animation: fadeIn 1s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Alert styles para flash messages */
+        .alert {
+            border-radius: 12px;
+            font-size: 0.9rem;
+            padding: 0.75rem 1rem;
+        }
+        .alert-success { background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: #6ee7b7; }
+        .alert-danger { background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #fca5a5; }
+        .alert-warning { background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); color: #fcd34d; }
+        .alert-info { background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); color: #93c5fd; }
     </style>
 </head>
 <body>
 
     <nav class="navbar navbar-expand-lg navbar-dark pt-4">
         <div class="container">
-            <a class="navbar-brand navbar-brand-custom" href="#">
+            <a class="navbar-brand navbar-brand-custom" href="{{ url_for('landing_page') }}">
                 <i class="bi bi-robot text-primary me-2"></i>SmartWallet <span class="text-primary">AI</span>
             </a>
             <div class="ms-auto">
@@ -185,25 +193,31 @@
                             {% with messages = get_flashed_messages(with_categories=true) %}
                                 {% if messages %}
                                     {% for category, message in messages %}
-                                        <div class="alert alert-{{ 'danger' if category == 'error' else category }} small border-0 bg-danger bg-opacity-10 text-danger mb-4">
+                                        <div class="alert alert-{{ category }} small border-0 mb-4">
                                             {{ message }}
                                         </div>
                                     {% endfor %}
                                 {% endif %}
                             {% endwith %}
 
-                            <form action="{{ url_for('auth.login') }}" method="POST">
+                            {# ✅ CORREÇÃO: url_for('auth.login') → url_for('login') #}
+                            <form action="{{ url_for('login') }}" method="POST">
+                                <input type="hidden" name="next" value="{{ request.args.get('next') }}">
+                                
                                 <div class="mb-3">
-                                    <label class="form-label small text-muted">Usuário</label>
-                                    <input type="text" name="username" class="form-control form-control-custom" placeholder="Seu nome de usuário" required>
+                                    <label class="form-label small text-muted">Usuário ou E-mail</label>
+                                    <input type="text" name="username" class="form-control form-control-custom" 
+                                           placeholder="ex: admin ou admin@localhost" required autofocus autocomplete="username">
                                 </div>
                                 <div class="mb-4">
                                     <label class="form-label small text-muted">Senha</label>
-                                    <input type="password" name="password" class="form-control form-control-custom" placeholder="••••••••" required>
+                                    <input type="password" name="password" class="form-control form-control-custom" 
+                                           placeholder="••••••••" required autocomplete="current-password">
                                 </div>
                                 <div class="mb-4 d-flex justify-content-between align-items-center">
                                     <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" id="remember">
+                                        {# ✅ CORREÇÃO: name="remember" para Flask-Login #}
+                                        <input type="checkbox" class="form-check-input" id="remember" name="remember">
                                         <label class="form-check-label small text-muted" for="remember">Lembrar de mim</label>
                                     </div>
                                     <a href="#" class="small text-primary text-decoration-none">Esqueceu a senha?</a>
@@ -214,7 +228,7 @@
                             </form>
                             
                             <p class="text-center mt-4 small text-muted">
-                                Novo por aqui? <a href="#" class="text-primary fw-bold text-decoration-none">Solicite um convite</a>
+                                Novo por aqui? <a href="{{ url_for('register') }}" class="text-primary fw-bold text-decoration-none">Crie sua conta</a>
                             </p>
                         </div>
                     </div>
@@ -222,7 +236,7 @@
             </div>
         </section>
 
-        <!-- Funcionalidades (O Auditor de Contas) -->
+        <!-- Funcionalidades -->
         <section id="funcionalidades" class="py-5 bg-black bg-opacity-25">
             <div class="container py-5">
                 <div class="text-center mb-5">

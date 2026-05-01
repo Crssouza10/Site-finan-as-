@@ -22,18 +22,30 @@
             <div class="bg-primary-gradient p-2 rounded-3 me-2 shadow-sm">
                 <i class="bi bi-robot text-white" style="font-size: 1.2rem;"></i>
             </div>
-            <a href="/" class="navbar-brand text-white fw-bold text-decoration-none mb-0">SmartWallet <span class="text-primary">AI</span></a>
+            <a href="/" class="navbar-brand text-white fw-bold text-decoration-none mb-0">
+                SmartWallet <span class="text-primary">AI</span>
+            </a>
         </div>
         
-        {% if current_user.is_authenticated %}
+        {# ✅ CORREÇÃO: Verificação segura de current_user + endpoints corrigidos #}
+        {% if current_user and current_user.is_authenticated %}
         <div class="d-flex align-items-center gap-3">
             <div class="ia-badge shadow-sm">PRO PLAN</div>
             <div class="user-badge-top d-flex align-items-center px-2 py-1 rounded bg-dark border border-secondary shadow-sm">
-                <span class="text-white small me-2"><i class="bi bi-person-circle me-1"></i> {{ current_user.username }}</span>
-                <a href="{{ url_for('auth.logout') }}" class="text-danger" title="Sair">
+                <span class="text-white small me-2">
+                    <i class="bi bi-person-circle me-1"></i> 
+                    {{ current_user.nome_completo or current_user.username }}
+                </span>
+                {# ✅ CORREÇÃO: url_for('auth.logout') → url_for('logout') #}
+                <a href="{{ url_for('logout') }}" class="text-danger" title="Sair">
                     <i class="bi bi-box-arrow-right"></i>
                 </a>
             </div>
+        </div>
+        {% else %}
+        <div class="d-flex align-items-center gap-2">
+            <a href="{{ url_for('login') }}" class="btn btn-sm btn-outline-light">Entrar</a>
+            <a href="{{ url_for('register') }}" class="btn btn-sm btn-primary">Cadastrar</a>
         </div>
         {% endif %}
     </nav>

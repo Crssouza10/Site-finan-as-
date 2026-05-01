@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}Cadastro - Gestão Financeira{% endblock %}
+
+{% block extra_css %}
+<style>
+  .auth-container {
+    max-width: 480px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: var(--surface, #181b25);
+    border: 1px solid var(--border, #2a2e3a);
+    border-radius: 12px;
+  }
+  .auth-container h2 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    color: var(--success, #10b981);
+  }
+  .auth-container label {
+    display: block;
+    margin: 1rem 0 0.5rem;
+    font-weight: 500;
+  }
+  .auth-container input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg, #0f1117);
+    color: var(--text);
+    font-size: 1rem;
+  }
+  .auth-container input:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+  .auth-container button {
+    width: 100%;
+    padding: 0.85rem;
+    margin-top: 1.5rem;
+    background: var(--success);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .auth-container button:hover {
+    background: #059669;
+  }
+  .auth-container p {
+    text-align: center;
+    margin-top: 1.5rem;
+    color: var(--text-muted);
+  }
+  .auth-container a {
+    color: var(--primary);
+    text-decoration: none;
+  }
+  .alert {
+    padding: 0.75rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+  }
+  .alert-danger { background: #7f1d1d33; border-left: 4px solid #ef4444; color: #fecaca; }
+  .alert-warning { background: #78350f33; border-left: 4px solid #f59e0b; color: #fef3c7; }
+  .alert-success { background: #065f4633; border-left: 4px solid #10b981; color: #d1fae5; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+  <h2>📝 Criar Nova Conta</h2>
+  
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+  
+  <form method="POST" action="{{ url_for('register') }}">
+    <label for="nome_completo">Nome Completo</label>
+    <input type="text" id="nome_completo" name="nome_completo" 
+           placeholder="Ex: Carlos Silva" autocomplete="name">
+    
+    <label for="username">Usuário *</label>
+    <input type="text" id="username" name="username" required 
+           placeholder="ex: carlos" minlength="3" autocomplete="username">
+    
+    <label for="email">E-mail *</label>
+    <input type="email" id="email" name="email" required 
+           placeholder="ex: carlos@email.com" autocomplete="email">
+    
+    <label for="password">Senha *</label>
+    <input type="password" id="password" name="password" required 
+           minlength="6" placeholder="Mínimo 6 caracteres" autocomplete="new-password">
+    
+    <label for="confirm_password">Confirmar Senha *</label>
+    <input type="password" id="confirm_password" name="confirm_password" required 
+           placeholder="Repita a senha" autocomplete="new-password">
+    
+    <button type="submit">Cadastrar</button>
+  </form>
+  
+  <p>Já tem conta? <a href="{{ url_for('login') }}">Fazer login</a></p>
+</div>
+
+<script>
+  // Validação simples de senha no cliente
+  document.querySelector('form').addEventListener('submit', function(e) {
+    const pwd = document.getElementById('password').value;
+    const confirm = document.getElementById('confirm_password').value;
+    if (pwd !== confirm) {
+      e.preventDefault();
+      alert('❌ As senhas não coincidem!');
+    }
+  });
+</script>
+{% endblock %}
