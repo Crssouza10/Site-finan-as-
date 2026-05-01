@@ -1,5 +1,7 @@
 {
   "version": 2,
+  "framework": null,
+  "buildCommand": "echo \"Python app\"",
   "builds": [
     {
       "src": "app.py",
