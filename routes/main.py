@@ -170,6 +170,21 @@ def add():
             )
             db.session.add(novo)
         
+        db.session.flush() # Para obter os IDs gerados
+        
+        # Salvar documento se enviado
+        file = request.files.get('documento')
+        if file and file.filename:
+            file_content = file.read()
+            novo_doc = Documento(
+                pagamento_id=novo.cod,
+                nome_arquivo=file.filename,
+                tipo_mime=file.mimetype,
+                conteudo=file_content,
+                tamanho=len(file_content)
+            )
+            db.session.add(novo_doc)
+
         db.session.commit()
         flash("✅ Registro(s) salvo(s) com sucesso!", "success")
     except Exception as e:
@@ -217,6 +232,21 @@ def alterar():
             cat = Categoria.query.filter_by(nome=request.form.get('Categoria')).first()
             if cat: pg.categoria_id = cat.id
             
+        file = request.files.get('documento')
+        if file and file.filename:
+            file_content = file.read()
+            doc_existente = Documento.query.filter_by(pagamento_id=pg.cod).first()
+            if doc_existente:
+                db.session.delete(doc_existente)
+            novo_doc = Documento(
+                pagamento_id=pg.cod,
+                nome_arquivo=file.filename,
+                tipo_mime=file.mimetype,
+                conteudo=file_content,
+                tamanho=len(file_content)
+            )
+            db.session.add(novo_doc)
+
         db.session.commit()
         flash("✅ Alterado com sucesso!", "success")
     except Exception as e:

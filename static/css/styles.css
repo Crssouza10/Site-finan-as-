@@ -128,9 +128,12 @@ body {
     vertical-align: middle;
 }
 
-.status-pago { background-color: #ecfdf5 !important; color: #065f46 !important; }
-.status-atrasado { background-color: #fef2f2 !important; color: #991b1b !important; }
-.status-pendente { background-color: #fffbeb !important; color: #92400e !important; }
+.status-pago > td { background-color: rgba(16, 185, 129, 0.15) !important; box-shadow: none !important; }
+.status-atrasado > td { background-color: rgba(239, 68, 68, 0.15) !important; box-shadow: none !important; }
+.status-pendente > td { background-color: rgba(245, 158, 11, 0.15) !important; box-shadow: none !important; }
+.status-pago { border-left: 4px solid #10b981 !important; }
+.status-atrasado { border-left: 4px solid #ef4444 !important; }
+.status-pendente { border-left: 4px solid #f59e0b !important; }
 
 /* AI Section Branding */
 .ia-badge {

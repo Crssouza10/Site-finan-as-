@@ -155,7 +155,7 @@
 
     <nav class="navbar navbar-expand-lg navbar-dark pt-4">
         <div class="container">
-            <a class="navbar-brand navbar-brand-custom" href="{{ url_for('landing_page') }}">
+            <a class="navbar-brand navbar-brand-custom" href="{{ url_for('auth.login') }}">
                 <i class="bi bi-robot text-primary me-2"></i>SmartWallet <span class="text-primary">AI</span>
             </a>
             <div class="ms-auto">
@@ -176,7 +176,7 @@
                                 Do Caos ao Controle Total em minutos. A IA que transforma dados em Liberdade Financeira real. <br>
                             <span class="text-gradient">Domine seu Futuro.</span>
                         </h1>
-                        <p class="lead text-muted mb-5 pe-lg-5">
+                        <p class="lead text-light mb-5 pe-lg-5" style="font-size: 1.15rem; line-height: 1.6;">
                             O primeiro gestor financeiro que age por você. Antecipe cenários, audite gastos em tempo real e 
                             pare de perder tempo com métodos obsoletos. Assuma o domínio real do seu futuro financeiro agora.
                         </p>
@@ -194,14 +194,14 @@
                                 {% if messages %}
                                     {% for category, message in messages %}
                                         <div class="alert alert-{{ category }} small border-0 mb-4">
-                                            {{ message }}
+                                            {{ message|safe }}
                                         </div>
                                     {% endfor %}
                                 {% endif %}
                             {% endwith %}
 
                             {# ✅ CORREÇÃO: url_for('auth.login') → url_for('login') #}
-                            <form action="{{ url_for('login') }}" method="POST">
+                            <form action="{{ url_for('auth.login') }}" method="POST">
                                 <input type="hidden" name="next" value="{{ request.args.get('next') }}">
                                 
                                 <div class="mb-3">
@@ -220,7 +220,7 @@
                                         <input type="checkbox" class="form-check-input" id="remember" name="remember">
                                         <label class="form-check-label small text-muted" for="remember">Lembrar de mim</label>
                                     </div>
-                                    <a href="#" class="small text-primary text-decoration-none">Esqueceu a senha?</a>
+                                    <a href="{{ url_for('auth.forgot_password') }}" class="small text-primary text-decoration-none">Esqueceu a senha?</a>
                                 </div>
                                 <button type="submit" class="btn btn-primary-custom w-100 py-3">
                                     Acessar Smart Dashboard <i class="bi bi-arrow-right ms-2"></i>
@@ -228,7 +228,7 @@
                             </form>
                             
                             <p class="text-center mt-4 small text-muted">
-                                Novo por aqui? <a href="{{ url_for('register') }}" class="text-primary fw-bold text-decoration-none">Crie sua conta</a>
+                                Novo por aqui? <a href="{{ url_for('auth.register') }}" class="text-primary fw-bold text-decoration-none">Crie sua conta</a>
                             </p>
                         </div>
                     </div>
@@ -241,15 +241,15 @@
             <div class="container py-5">
                 <div class="text-center mb-5">
                     <h2 class="fw-800 fs-1 mb-3">Nossas <span class="text-primary">Peculiaridades de Ouro</span></h2>
-                    <p class="text-muted">Recursos exclusivos desenvolvidos para quem busca o próximo nível financeiro.</p>
+                    <p class="text-light fs-5">Recursos exclusivos desenvolvidos para quem busca o próximo nível financeiro.</p>
                 </div>
                 
                 <div class="row g-4">
                     <div class="col-md-4">
                         <div class="feature-card">
                             <div class="feature-icon bg-danger"><i class="bi bi-search"></i></div>
-                            <h4 class="fw-bold text-white">Auditor de Assinaturas</h4>
-                            <p class="text-muted small">
+                            <h4 class="fw-bold text-white mb-3">Auditor de Assinaturas</h4>
+                            <p class="text-light" style="line-height: 1.6;">
                                 Nosso radar identifica "fadiga de assinaturas" e variações de preço ocultas. 
                                 Saiba exatamente quanto aquela conta baratinha custa no seu acumulado anual.
                             </p>
@@ -259,8 +259,8 @@
                     <div class="col-md-4">
                         <div class="feature-card">
                             <div class="feature-icon bg-success"><i class="bi bi-crystal-ball"></i></div>
-                            <h4 class="fw-bold text-white">Forecast de 6 Meses</h4>
-                            <p class="text-muted small">
+                            <h4 class="fw-bold text-white mb-3">Forecast de 6 Meses</h4>
+                            <p class="text-light" style="line-height: 1.6;">
                                 O GPS do seu dinheiro. Nossa IA projeta seu saldo bancário para os próximos meses, 
                                 permitindo que você tome decisões hoje com a clareza do amanhã.
                             </p>
@@ -270,8 +270,8 @@
                     <div class="col-md-4">
                         <div class="feature-card">
                             <div class="feature-icon bg-primary"><i class="bi bi-shield-check"></i></div>
-                            <h4 class="fw-bold text-white">Guardião da Reserva</h4>
-                            <p class="text-muted small">
+                            <h4 class="fw-bold text-white mb-3">Guardião da Reserva</h4>
+                            <p class="text-light" style="line-height: 1.6;">
                                 Calculamos em tempo real quantos "meses de sobrevivência" você possui. 
                                 A IA sugere otimizações cruzadas para antecipar sua independência financeira.
                             </p>
@@ -288,15 +288,15 @@
                     <div class="col-lg-6">
                         <div class="p-4 bg-primary bg-opacity-10 rounded-4 border border-primary border-opacity-25">
                             <i class="bi bi-file-earmark-pdf text-primary fs-1 mb-3"></i>
-                            <h3 class="fw-bold">Relatório de Saúde via IA</h3>
-                            <p class="text-muted">
+                            <h3 class="fw-bold mb-3">Relatório de Saúde via IA</h3>
+                            <p class="text-light mb-4" style="line-height: 1.6;">
                                 Em um clique, gere um parecer técnico humanizado sobre sua performance financeira. 
                                 O SmartWallet AI traduz números complexos em conselhos estratégicos prontos para agir.
                             </p>
                             <ul class="list-unstyled">
-                                <li class="mb-2 text-white-50"><i class="bi bi-check2 text-primary me-2"></i> Análise de Taxa de Poupança</li>
-                                <li class="mb-2 text-white-50"><i class="bi bi-check2 text-primary me-2"></i> Detecção de Anomalias de Gastos</li>
-                                <li class="mb-2 text-white-50"><i class="bi bi-check2 text-primary me-2"></i> Parecer Narrativo Humanizado</li>
+                                <li class="mb-3 text-light"><i class="bi bi-check2 text-primary me-2 fs-5"></i> Análise de Taxa de Poupança</li>
+                                <li class="mb-3 text-light"><i class="bi bi-check2 text-primary me-2 fs-5"></i> Detecção de Anomalias de Gastos</li>
+                                <li class="mb-3 text-light"><i class="bi bi-check2 text-primary me-2 fs-5"></i> Parecer Narrativo Humanizado</li>
                             </ul>
                         </div>
                     </div>

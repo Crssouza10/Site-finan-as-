@@ -7,7 +7,7 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from datetime import datetime, timedelta
-from sqlalchemy import func, extract
+from sqlalchemy import func, extract, select
 from dotenv import load_dotenv
 from pathlib import Path
 import os, json, io, calendar, csv, zipfile, tempfile, shutil
@@ -494,29 +494,74 @@ def dashboard():
     receitas_vig = 0.0
     despesas_vig = 0.0
     
-    # Exemplo: buscar dados reais se houver filtros
+    # ✅ CONSULTAS CORRETAS - Filtrando por mes_ano (ano financeiro)
     if ano_selecionado:
-        # Ajuste estas consultas conforme sua necessidade
         from sqlalchemy import extract
         
+        # Converte ano para string (ex: 2026 → "2026")
+        ano_str = str(ano_selecionado)
+        
+        # Filtra por mes_ano (formato MM/AAAA)
         receitas_vig = db.session.query(
             db.func.sum(Pagamento.valor_pagar)
         ).filter(
             Pagamento.receita_despesa == 'R',
-            extract('year', Pagamento.created_at) == ano_selecionado
+            Pagamento.mes_ano.ilike(f'%/{ano_str}')  # Filtra MM/2026
         ).scalar() or 0.0
         
         despesas_vig = db.session.query(
             db.func.sum(Pagamento.valor_pagar)
         ).filter(
             Pagamento.receita_despesa == 'D',
-            extract('year', Pagamento.created_at) == ano_selecionado
+            Pagamento.mes_ano.ilike(f'%/{ano_str}')  # Filtra MM/2026
         ).scalar() or 0.0
     
     # ✅ Dados para os gráficos (placeholder - ajuste conforme necessário)
-    ant = [0] * 12  # Ano anterior
-    vig = [0] * 12  # Ano vigente
-    fut = [0] * 12  # Ano futuro (projeção)
+    # ✅ DADOS REAIS PARA GRÁFICOS
+    from sqlalchemy import extract
+    
+    meses_labels = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 
+                    'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
+    vig, ant, fut = [], [], []
+    
+    for mes in range(1, 13):
+        # Despesas do ano vigente por mês
+        v_vig = db.session.query(func.sum(Pagamento.valor_pagar)).filter(
+            Pagamento.receita_despesa == 'D',
+            extract('year', Pagamento.created_at) == ano_selecionado,
+            extract('month', Pagamento.created_at) == mes
+        ).scalar() or 0.0
+        vig.append(float(v_vig))
+        
+        # Despesas do ano anterior por mês
+        v_ant = db.session.query(func.sum(Pagamento.valor_pagar)).filter(
+            Pagamento.receita_despesa == 'D',
+            extract('year', Pagamento.created_at) == (ano_selecionado - 1),
+            extract('month', Pagamento.created_at) == mes
+        ).scalar() or 0.0
+        ant.append(float(v_ant))
+        
+        fut.append(0.0)  # Projeção futura (implementar IA depois)
+    
+    # ✅ Top 5 categorias para gráfico de pizza
+    top_cats = db.session.query(
+        Categoria.nome, func.sum(Pagamento.valor_pagar).label('total')
+    ).join(Pagamento).filter(
+        Pagamento.receita_despesa == 'D',
+        extract('year', Pagamento.created_at) == ano_selecionado
+    ).group_by(Categoria.nome).order_by(func.sum(Pagamento.valor_pagar).desc()).limit(5).all()
+    
+    dados_categorias = [
+        {'nome': c.nome, 'valor': float(c.total or 0)} 
+        for c in top_cats if c.nome
+    ]
+    
+    # ✅ Tendência dos últimos 6 meses
+    dados_tendencia = {
+        'labels': meses_labels[-6:],
+        'despesas': vig[-6:],
+        'receitas': [0.0] * 6  # Implementar consulta real se necessário
+    }
     
     # ✅ Renderizar template com TODAS as variáveis necessárias
     return render_template(
@@ -544,62 +589,158 @@ def dashboard():
 # 📊 API PARA DASHBOARD
 # ============================================================================
 @app.route('/api/dashboard/data')
-@login_required  # 🔐 Protege API
+@login_required
 def api_dashboard_data():
-    """Retorna dados para gráficos do dashboard"""
+    """Retorna dados para gráficos do dashboard - VERSÃO APRIMORADA"""
     try:
-        # Despesas por categoria (Top 10)
+        from sqlalchemy import extract
+        
+        # ========== DESPESAS POR CATEGORIA (2026) ==========
         despesas_cat = db.session.query(
             Categoria.nome,
-            func.sum(Pagamento.valor_pagar).label('total')
+            func.sum(Pagamento.valor_pagar).label('total'),
+            func.count(Pagamento.cod).label('qtd')
         ).join(Pagamento).filter(
-            Pagamento.receita_despesa == 'D'
+            Pagamento.receita_despesa == 'D',
+            Pagamento.mes_ano.ilike('%/2026')
         ).group_by(Categoria.nome).order_by(
             func.sum(Pagamento.valor_pagar).desc()
         ).limit(10).all()
         
-        # Evolução mensal (últimos 12 meses)
-        meses, despesas_vals, receitas_vals = [], [], []
-        for i in range(11, -1, -1):
-            ref = datetime.now() - timedelta(days=i*30)
-            mes_ano = ref.strftime('%m/%Y')
-            meses.append(mes_ano)
-            desp = db.session.query(func.sum(Pagamento.valor_pagar)).filter(
-                Pagamento.mes_ano == mes_ano, Pagamento.receita_despesa == 'D'
-            ).scalar() or 0
-            rec = db.session.query(func.sum(Pagamento.valor_pagar)).filter(
-                Pagamento.mes_ano == mes_ano, Pagamento.receita_despesa == 'R'
-            ).scalar() or 0
-            despesas_vals.append(float(desp))
-            receitas_vals.append(float(rec))
+        # ========== EVOLUÇÃO MENSAL COMPARATIVA (2025 vs 2026) ==========
+        meses_labels = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 
+                        'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
+        dados_2025 = {'despesas': [], 'receitas': []}
+        dados_2026 = {'despesas': [], 'receitas': []}
         
-        # Status pagamentos
+        for mes_num in range(1, 13):
+            mes_str = f'{mes_num:02d}'
+            
+            # 2025
+            desp_2025 = db.session.query(func.sum(Pagamento.valor_pagar)).filter(
+                Pagamento.receita_despesa == 'D',
+                Pagamento.mes_ano == f'{mes_str}/2025'
+            ).scalar() or 0
+            
+            rec_2025 = db.session.query(func.sum(Pagamento.valor_pagar)).filter(
+                Pagamento.receita_despesa == 'R',
+                Pagamento.mes_ano == f'{mes_str}/2025'
+            ).scalar() or 0
+            
+            dados_2025['despesas'].append(float(desp_2025))
+            dados_2025['receitas'].append(float(rec_2025))
+            
+            # 2026
+            desp_2026 = db.session.query(func.sum(Pagamento.valor_pagar)).filter(
+                Pagamento.receita_despesa == 'D',
+                Pagamento.mes_ano == f'{mes_str}/2026'
+            ).scalar() or 0
+            
+            rec_2026 = db.session.query(func.sum(Pagamento.valor_pagar)).filter(
+                Pagamento.receita_despesa == 'R',
+                Pagamento.mes_ano == f'{mes_str}/2026'
+            ).scalar() or 0
+            
+            dados_2026['despesas'].append(float(desp_2026))
+            dados_2026['receitas'].append(float(rec_2026))
+        
+        # ========== CÁLCULO DE VARIAÇÃO ANUAL ==========
+        total_desp_2025 = sum(dados_2025['despesas'])
+        total_desp_2026 = sum(dados_2026['despesas'])
+        total_rec_2025 = sum(dados_2025['receitas'])
+        total_rec_2026 = sum(dados_2026['receitas'])
+        
+        variacao_despesas = ((total_desp_2026 - total_desp_2025) / total_desp_2025 * 100) if total_desp_2025 > 0 else 0
+        variacao_receitas = ((total_rec_2026 - total_rec_2025) / total_rec_2025 * 100) if total_rec_2025 > 0 else 0
+        
+        # ========== CATEGORIAS COM MAIOR VARIAÇÃO ==========
+        categorias_variacao = []
+        todas_cats = db.session.query(Categoria.nome).distinct().all()
+        
+        for cat in todas_cats:
+            cat_nome = cat[0]
+            
+            # Total 2025
+            total_2025 = db.session.query(func.sum(Pagamento.valor_pagar)).filter(
+                Pagamento.categoria_id == Categoria.id,
+                Pagamento.mes_ano.ilike('%/2025')
+            ).scalar() or 0
+            
+            # Total 2026
+            total_2026 = db.session.query(func.sum(Pagamento.valor_pagar)).filter(
+                Pagamento.categoria_id == Categoria.id,
+                Pagamento.mes_ano.ilike('%/2026')
+            ).scalar() or 0
+            
+            if total_2025 > 0:
+                variacao = ((total_2026 - total_2025) / total_2025 * 100)
+                categorias_variacao.append({
+                    'categoria': cat_nome,
+                    '2025': round(total_2025, 2),
+                    '2026': round(total_2026, 2),
+                    'variacao': round(variacao, 1),
+                    'tendencia': 'aumento' if variacao > 0 else 'reducao' if variacao < 0 else 'estavel'
+                })
+        
+        # Ordenar por maior variação absoluta
+        categorias_variacao.sort(key=lambda x: abs(x['variacao']), reverse=True)
+        top_variacao = categorias_variacao[:5]  # Top 5 com maior variação
+        
+        # ========== STATUS DOS PAGAMENTOS ==========
         pago = db.session.query(func.sum(Pagamento.valor_pago)).filter(
             Pagamento.valor_pago > 0
         ).scalar() or 0
+        
         pendente = db.session.query(func.sum(Pagamento.valor_pagar)).filter(
             (Pagamento.valor_pago == 0) | (Pagamento.valor_pago.is_(None)),
             Pagamento.receita_despesa == 'D'
         ).scalar() or 0
         
+        # ========== RETORNAR JSON ==========
         return jsonify({
             'despesas_categoria': {
                 'labels': [c.nome for c in despesas_cat],
-                'values': [float(c.total or 0) for c in despesas_cat]
+                'values': [float(c.total or 0) for c in despesas_cat],
+                'quantidades': [c.qtd for c in despesas_cat]
             },
             'evolucao_mensal': {
-                'labels': meses,
-                'despesas': despesas_vals,
-                'receitas': receitas_vals
+                'labels': meses_labels,
+                '2025': dados_2025,
+                '2026': dados_2026,
+                'comparativo': {
+                    'despesas': {
+                        '2025': round(total_desp_2025, 2),
+                        '2026': round(total_desp_2026, 2),
+                        'variacao_percentual': round(variacao_despesas, 1)
+                    },
+                    'receitas': {
+                        '2025': round(total_rec_2025, 2),
+                        '2026': round(total_rec_2026, 2),
+                        'variacao_percentual': round(variacao_receitas, 1)
+                    }
+                }
             },
             'status_pagamentos': {
                 'pago': float(pago),
                 'pendente': float(pendente)
+            },
+            'categorias_variacao': top_variacao,
+            'resumo_anual': {
+                'total_despesas_2025': round(total_desp_2025, 2),
+                'total_despesas_2026': round(total_desp_2026, 2),
+                'total_receitas_2025': round(total_rec_2025, 2),
+                'total_receitas_2026': round(total_rec_2026, 2),
+                'variacao_despesas': round(variacao_despesas, 1),
+                'variacao_receitas': round(variacao_receitas, 1)
             }
         })
+        
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
+        import traceback
+        return jsonify({
+            'error': str(e),
+            'traceback': traceback.format_exc()
+        }), 500
 
 # ============================================================================
 # 🔄 CRUD - AÇÕES DO SISTEMA
@@ -758,10 +899,10 @@ def upload_documento(cod):
 def visualizar_documento(doc_id):
     """Visualizar documento anexado"""
     try:
-        doc = Documento.query.get_or_404(doc_id)
-        if not doc.conteudo:
-            flash("Arquivo vazio ou não encontrado.", "warning")
-            return redirect(url_for('index'))
+        doc = db.session.get(Documento, doc_id)
+        if not doc:
+            from flask import abort
+            abort(404)
         
         return send_file(
             io.BytesIO(doc.conteudo),
@@ -913,6 +1054,134 @@ def unauthorized(e):
     flash("🔐 Acesso restrito. Faça login para continuar.", "warning")
     return redirect(url_for('login'))
 
+# ============================================================================
+# 🚀 ROTA DAS PROJEÇÕES
+# ============================================================================
+@app.route('/api/dashboard/projecoes')
+@login_required
+def api_dashboard_projecoes():
+    """Retorna projeção de saldo para os próximos 6 meses"""
+    from datetime import datetime, timedelta
+    from sqlalchemy import extract
+    
+    # Calcular saldo atual
+    receitas = db.session.query(func.sum(Pagamento.valor_pagar)).filter(
+        Pagamento.receita_despesa == 'R'
+    ).scalar() or 0
+    
+    despesas = db.session.query(func.sum(Pagamento.valor_pagar)).filter(
+        Pagamento.receita_despesa == 'D',
+        Pagamento.valor_pago > 0
+    ).scalar() or 0
+    
+    saldo_atual = receitas - despesas
+    
+    # Calcular média mensal de despesas
+    media_mensal = despesas / 12 if despesas > 0 else 0
+    
+    # Projetar próximos 6 meses
+    labels = []
+    valores = []
+    saldo = saldo_atual
+    
+    for i in range(1, 7):
+        mes_ref = datetime.now() + timedelta(days=i*30)
+        labels.append(mes_ref.strftime('%b/%Y'))
+        
+        # Projeção simples: saldo atual - (média mensal * meses)
+        saldo = saldo - media_mensal
+        valores.append(round(saldo, 2))
+    
+    return jsonify({
+        'labels': labels,
+        'valores': valores,
+        'saldo_atual': round(saldo_atual, 2),
+        'media_mensal': round(media_mensal, 2)
+    })
+
+@app.route('/api/reserva', methods=['GET'])
+@login_required
+def api_reserva_get():
+    """Retorna dados da reserva de emergência"""
+    # Calcular custo de vida médio mensal
+    custo_medio = db.session.query(
+        func.avg(Pagamento.valor_pagar)
+    ).filter(
+        Pagamento.receita_despesa == 'D',
+        Pagamento.valor_pago > 0
+    ).scalar() or 0
+    
+    # Total em reserva (poderia vir de uma tabela separada)
+    valor_reserva = 0  # Placeholder
+    
+    # Calcular meses de cobertura
+    meses_cobertura = valor_reserva / custo_medio if custo_medio > 0 else 0
+    
+    # Objetivo padrão: 6 meses
+    objetivo_meses = 6
+    percentual = (meses_cobertura / objetivo_meses * 100) if objetivo_meses > 0 else 0
+    
+    return jsonify({
+        'sucesso': True,
+        'analise': {
+            'meses_cobertura': round(meses_cobertura, 1),
+            'percentual_objetivo': round(percentual, 1),
+            'media_gastos': round(custo_medio, 2),
+            'valor_reserva': round(valor_reserva, 2),
+            'otimizacao': None
+        },
+        'config': {
+            'objetivo_meses': objetivo_meses,
+            'valor_manual': 0
+        }
+    })
+
+# ============================================================================
+# 🚀 RODAS DAS RESERVAS
+# ===========================================================================
+@app.route('/api/reserva', methods=['POST'])
+@login_required
+def api_reserva_post():
+    """Salva configuração da reserva"""
+    data = request.get_json()
+    # Implementação futura - por enquanto apenas retorna sucesso
+    return jsonify({'sucesso': True, 'mensagem': 'Configuração salva!'})
+
+# ============================================================================
+# 🚀 RODAS DAS ASSINATURAS
+# ===========================================================================
+@app.route('/api/analise/assinaturas')
+@login_required
+def api_analise_assinaturas():
+    """Identifica assinaturas recorrentes e suas variações"""
+    # Buscar pagamentos recorrentes (mesma conta, meses consecutivos)
+    assinaturas = db.session.query(
+        Pagamento.conta,
+        func.avg(Pagamento.valor_pagar).label('valor_medio'),
+        func.count(Pagamento.cod).label('qtd_meses')
+    ).filter(
+        Pagamento.receita_despesa == 'D',
+        Pagamento.parcela.is_(None)  # Excluir parcelamentos
+    ).group_by(Pagamento.conta).having(
+        func.count(Pagamento.cod) >= 3  # Mínimo 3 meses
+    ).all()
+    
+    total_anual = sum(float(a.valor_medio) * 12 for a in assinaturas)
+    
+    return jsonify({
+        'sucesso': True,
+        'assinaturas': [
+            {
+                'conta': a.conta,
+                'valor_recente': float(a.valor_medio),
+                'custo_anual_projetado': float(a.valor_medio) * 12,
+                'variacao_percentual': 0,  # Calcular variação real
+                'alerta': False
+            }
+            for a in assinaturas
+        ],
+        'total_anual_assinaturas': round(total_anual, 2)
+    })
 
 # ============================================================================
 # 🚀 EXECUÇÃO + INICIALIZAÇÃO DO BANCO
@@ -926,7 +1195,7 @@ if __name__ == '__main__':
         popular_categorias_iniciais()
         
         # Cria usuário admin padrão se não existir (apenas para dev)
-        if not User.query.filter_by(username='admin').first():
+        if not db.session.scalar(select(User).filter_by(username='admin')):  
             admin = User(
                 username='admin',
                 email='admin@localhost',

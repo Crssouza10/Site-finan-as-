@@ -3,6 +3,8 @@ from database import db
 from sqlalchemy import func, extract
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask import current_app
+from itsdangerous import URLSafeTimedSerializer
 
 class User(db.Model, UserMixin):
     __tablename__ = 'usuarios'
@@ -15,6 +17,19 @@ class User(db.Model, UserMixin):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+
+    def get_reset_token(self, expires_sec=1800):
+        s = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+        return s.dumps({'user_id': self.id})
+
+    @staticmethod
+    def verify_reset_token(token, expires_sec=1800):
+        s = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+        try:
+            user_id = s.loads(token, max_age=expires_sec)['user_id']
+        except:
+            return None
+        return User.query.get(user_id)
 
 class Categoria(db.Model):
     __tablename__ = 'categorias'

@@ -43,25 +43,67 @@
 {% block content %}
 <div class="container py-4">
     <!-- Cabeçalho -->
+    <!-- NOVO: Barra Comparativa Interanual -->
     <div class="row mb-4 animate-in">
-        <div class="col-md-8">
-            <h2 class="fw-bold mb-1">
-                <i class="bi bi-graph-up-arrow me-2 text-primary"></i>Inteligência Financeira
-            </h2>
-            <p class="text-muted mb-0">
-                <i class="bi bi-info-circle me-1"></i>Análise comparativa interanual de despesas e receitas
-            </p>
-        </div>
-        <div class="col-md-4 text-md-end">
-            <span class="badge bg-primary fs-6 px-3 py-2">
-                <i class="bi bi-shield-check me-1"></i>Dados Confiáveis
-            </span>
+        <div class="col-12">
+            <div class="card border-0 shadow-sm bg-light bg-opacity-50">
+                <div class="card-body p-3">
+                    <div class="row g-3 align-items-center text-center text-md-start">
+                        
+                        <!-- Coluna 2025 -->
+                        <div class="col-md-4 border-end border-secondary border-opacity-10">
+                            <small class="text-muted text-uppercase fw-bold d-block mb-1">Base 2025</small>
+                            <div class="d-flex justify-content-center justify-content-md-start gap-3">
+                                <div>
+                                    <span class="text-success fw-bold d-block">Receitas</span>
+                                    <span id="resumo-rec-2025" class="text-muted">R$ 0,00</span>
+                                </div>
+                                <div>
+                                    <span class="text-danger fw-bold d-block">Despesas</span>
+                                    <span id="resumo-desp-2025" class="text-muted">R$ 0,00</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Coluna Variação -->
+                        <div class="col-md-4 border-end border-secondary border-opacity-10 text-center">
+                            <small class="text-muted text-uppercase fw-bold d-block mb-1">Variação Anual</small>
+                            <div class="d-flex justify-content-center gap-4">
+                                <div>
+                                    <span class="d-block mb-1"><i class="bi bi-arrow-up-circle text-success me-1"></i>Receitas</span>
+                                    <span id="var-rec" class="badge bg-success bg-opacity-10 text-success px-3 py-2">0%</span>
+                                </div>
+                                <div>
+                                    <span class="d-block mb-1"><i class="bi bi-arrow-up-circle text-danger me-1"></i>Despesas</span>
+                                    <span id="var-desp" class="badge bg-danger bg-opacity-10 text-danger px-3 py-2">0%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Coluna 2026 -->
+                        <div class="col-md-4">
+                            <small class="text-muted text-uppercase fw-bold d-block mb-1">Vigente 2026</small>
+                            <div class="d-flex justify-content-center justify-content-md-end gap-3">
+                                <div class="text-end">
+                                    <span class="text-success fw-bold d-block">Receitas</span>
+                                    <span id="resumo-rec-2026" class="text-muted">R$ 0,00</span>
+                                </div>
+                                <div class="text-end">
+                                    <span class="text-danger fw-bold d-block">Despesas</span>
+                                    <span id="resumo-desp-2026" class="text-muted">R$ 0,00</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- Filtros -->
     <div class="filter-section animate-in">
-        <form id="formFiltros" method="GET" action="{{ url_for('dashboard') }}">
+        <form id="formFiltros" method="GET" action="{{ url_for('dashboard.dashboard') }}">
             <div class="row g-3 align-items-end">
                 <div class="col-md-3">
                     <label class="filter-label">Exercício Financeiro</label>
@@ -114,10 +156,11 @@
                                 </span>
                                 
                                 {# 🚀 QUANDO IMPLEMENTAR A ROTA, use este código instead:
-                                <a href="{{ url_for('gerar_relatorio_ia', mes_ano=now.strftime('%m/%Y')) }}" 
-                                class="btn btn-sm btn-outline-primary py-0 px-2 small" style="font-size: 0.7rem;">
-                                    <i class="bi bi-file-earmark-pdf me-1"></i> Baixar Relatório Saúde
-                                </a>
+                                <span class="btn btn-sm btn-outline-primary py-0 px-2 small disabled" 
+                                    style="opacity: 0.6; cursor: not-allowed;" 
+                                    title="Em desenvolvimento">
+                                    <i class="bi bi-file-earmark-pdf me-1"></i> Relatório Saúde (Em Breve)
+                                </span>
                                 #}
                             </div>
                             <div class="row g-2">
@@ -354,7 +397,7 @@
 <script>
 // Dados do dashboard (mantido)
 const dashboardData = {
-    labels: ['Jan', 'Fev', ' 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+    labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
     anos: {
         ant: {{ ant | default([], true) | tojson }},
         vig: {{ vig | default([], true) | tojson }},
@@ -385,76 +428,384 @@ const dashboardData = {
 
 let graficoComparativo, graficoCategorias, graficoForecast;
 
-document.addEventListener('DOMContentLoaded', async () => {
-    // Gráficos que funcionam com dados do backend
-    inicializarGraficoComparativo();
-    inicializarGraficoCategorias();
-    configurarAlternanciaTipoGrafico();
-    
-    // Features que dependem de APIs ainda não implementadas
-    // → Carregamento defensivo com fallback
-    await inicializarGraficoForecastDefensivo();
-    await carregarDadosReservaDefensivo();
-    await carregarAnaliseAssinaturasDefensivo();
-});
 
-// ✅ Gráfico Comparativo (funciona com dados do template)
+// Função para atualizar a barra comparativa
+function atualizarResumoComparativo(dados) {
+    if (!dados.resumo_anual) return;
+    
+    const formatar = (val) => `R$ ${val.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+    const formatarPct = (val) => `${val > 0 ? '+' : ''}${val}%`;
+    
+    // Preencher valores 2025
+    document.getElementById('resumo-rec-2025').textContent = formatar(dados.resumo_anual.total_receitas_2025);
+    document.getElementById('resumo-desp-2025').textContent = formatar(dados.resumo_anual.total_despesas_2025);
+    
+    // Preencher valores 2026
+    document.getElementById('resumo-rec-2026').textContent = formatar(dados.resumo_anual.total_receitas_2026);
+    document.getElementById('resumo-desp-2026').textContent = formatar(dados.resumo_anual.total_despesas_2026);
+    
+    // Preencher variações
+    const varRec = dados.resumo_anual.variacao_receitas;
+    const varDesp = dados.resumo_anual.variacao_despesas;
+    
+    const badgeRec = document.getElementById('var-rec');
+    badgeRec.textContent = formatarPct(varRec);
+    badgeRec.className = `badge px-3 py-2 ${varRec >= 0 ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'}`;
+    
+    const badgeDesp = document.getElementById('var-desp');
+    badgeDesp.textContent = formatarPct(varDesp);
+    badgeDesp.className = `badge px-3 py-2 ${varDesp <= 0 ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'}`;
+}
+
+
+//✅ ========= GRÁFICO DE EVOLUÇÃO MENSAL COMPARATIVA ==========
 function inicializarGraficoComparativo() {
     const ctx = document.getElementById('graficoComparativo');
     if (!ctx) return;
-    const { anos, filtros, cores } = dashboardData;
+    
+    const dados = dashboardData.evolucao_mensal;
+    
     graficoComparativo = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: dashboardData.labels,
+            labels: dados.labels,
             datasets: [
-                { label: filtros.ano_ant, data: anos.ant, backgroundColor: cores.ant, borderColor: cores.border.ant, borderWidth: 1 },
-                { label: filtros.ano_vig, data: anos.vig, backgroundColor: cores.vig, borderColor: cores.border.vig, borderWidth: 2 },
-                { label: filtros.ano_fut, data: anos.fut, backgroundColor: cores.fut, borderColor: cores.border.fut, borderWidth: 1, borderDash: [5, 3] }
+                {
+                    label: `Despesas 2025`,
+                    data: dados['2025'].despesas,
+                    backgroundColor: 'rgba(52, 152, 219, 0.7)',
+                    borderColor: 'rgb(41, 128, 185)',
+                    borderWidth: 2
+                },
+                {
+                    label: `Despesas 2026`,
+                    data: dados['2026'].despesas,
+                    backgroundColor: 'rgba(39, 174, 96, 0.7)',
+                    borderColor: 'rgb(22, 160, 133)',
+                    borderWidth: 2
+                },
+                {
+                    label: `Receitas 2025`,
+                    data: dados['2025'].receitas,
+                    backgroundColor: 'rgba(241, 196, 15, 0.5)',
+                    borderColor: 'rgb(211, 84, 0)',
+                    borderWidth: 2,
+                    hidden: true  // Começa oculto
+                },
+                {
+                    label: `Receitas 2026`,
+                    data: dados['2026'].receitas,
+                    backgroundColor: 'rgba(155, 89, 182, 0.5)',
+                    borderColor: 'rgb(142, 68, 173)',
+                    borderWidth: 2,
+                    hidden: true  // Começa oculto
+                }
             ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { position: 'top' } },
-            scales: { y: { beginAtZero: true, ticks: { callback: v => 'R$ ' + (v/1000).toFixed(1) + 'k' } } }
+            plugins: {
+                legend: {
+                    position: 'top',
+                    onClick: (e, legendItem) => {
+                        // Toggle visibility
+                        const index = legendItem.datasetIndex;
+                        const ci = legendItem.chart;
+                        const meta = ci.getDatasetMeta(index);
+                        meta.hidden = meta.hidden === null ? !ci.data.datasets[index].hidden : null;
+                        ci.update();
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed.y !== null) {
+                                label += new Intl.NumberFormat('pt-BR', {
+                                    style: 'currency',
+                                    currency: 'BRL'
+                                }).format(context.parsed.y);
+                            }
+                            return label;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return 'R$ ' + (value/1000).toFixed(0) + 'k';
+                        }
+                    }
+                }
+            }
         }
     });
+    
+    // Adicionar indicador de variação
+    const variacao = dados.comparativo.despesas.variacao_percentual;
+    const corVariacao = variacao < 0 ? 'text-success' : 'text-danger';
+    const iconeVariacao = variacao < 0 ? '📉' : '📈';
+    
+    // Criar badge de variação (se não existir)
+    let badgeVar = document.getElementById('badge-variacao-anual');
+    if (!badgeVar) {
+        const header = ctx.closest('.card').querySelector('.card-header');
+        badgeVar = document.createElement('span');
+        badgeVar.id = 'badge-variacao-anual';
+        badgeVar.className = 'badge bg-light text-dark ms-2';
+        header.appendChild(badgeVar);
+    }
+    
+    badgeVar.innerHTML = `${iconeVariacao} ${variacao > 0 ? '+' : ''}${variacao}% vs 2025`;
+    badgeVar.className = `badge ms-2 ${variacao < 0 ? 'bg-success' : 'bg-danger'} text-white`;
 }
 
-// ✅ Gráfico Categorias (funciona com dados do template)
+// ✅ ========== GRÁFICO DE CATEGORIAS COM VARIAÇÃO ==========
 function inicializarGraficoCategorias() {
     const ctx = document.getElementById('graficoCategorias');
     if (!ctx) return;
-    const { receitas_vig, despesas_vig, categoria_selecionada } = dashboardData;
-    const restante = Math.max(0, receitas_vig - despesas_vig);
+    
+    const dados = dashboardData.despesas_categoria;
+    const variacoes = dashboardData.categorias_variacao || [];
+    
     graficoCategorias = new Chart(ctx, {
-        type: 'pie',
-        plugins: [ChartDataLabels],
+        type: 'doughnut',
         data: {
-            labels: [categoria_selecionada || "Despesas", "Restante"],
+            labels: dados.labels,
             datasets: [{
-                data: [despesas_vig, restante],
-                backgroundColor: ['#e74c3c', '#3498db'],
-                offset: [10, 0]
+                data: dados.values,
+                backgroundColor: [
+                    '#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6',
+                    '#1abc9c', '#e67e22', '#34495e', '#95a5a6', '#d35400'
+                ],
+                borderWidth: 2,
+                borderColor: '#fff'
             }]
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             plugins: {
-                datalabels: {
-                    formatter: (v, ctx) => {
-                        const total = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
-                        return v > 0 ? ((v/total)*100).toFixed(1) + '%' : '';
-                    },
-                    color: '#fff', font: { weight: 'bold' }
+                legend: {
+                    position: 'right',
+                    labels: {
+                        boxWidth: 12,
+                        padding: 10,
+                        font: {
+                            size: 11
+                        }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.parsed || 0;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percent = ((value / total) * 100).toFixed(1);
+                            
+                            // Buscar variação se existir
+                            const variacao = variacoes.find(v => v.categoria === label);
+                            let variacaoText = '';
+                            if (variacao) {
+                                const sinal = variacao.variacao > 0 ? '+' : '';
+                                variacaoText = ` (${sinal}${variacao.variacao}%)`;
+                            }
+                            
+                            return `${label}: R$ ${value.toLocaleString('pt-BR', {minimumFractionDigits: 2})}${variacaoText} - ${percent}%`;
+                        }
+                    }
                 }
             }
         }
     });
 }
 
+// ✅ ======== NOVO: GRÁFICO DE VARIAÇÃO POR CATEGORIA ==========
+function inicializarGraficoVariacaoCategorias() {
+    const container = document.getElementById('container-variacao-categorias');
+    if (!container) return;
+    
+    const variacoes = dashboardData.categorias_variacao || [];
+    if (variacoes.length === 0) {
+        container.innerHTML = '<p class="text-muted text-center">Sem dados de variação disponíveis</p>';
+        return;
+    }
+    
+    // Criar tabela de variação
+    let html = `
+        <div class="table-responsive">
+            <table class="table table-sm table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Categoria</th>
+                        <th class="text-end">2025</th>
+                        <th class="text-end">2026</th>
+                        <th class="text-end">Variação</th>
+                        <th>Tendência</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+    
+    variacoes.forEach(cat => {
+        const corVariacao = cat.variacao > 0 ? 'text-danger' : cat.variacao < 0 ? 'text-success' : 'text-muted';
+        const icone = cat.variacao > 0 ? '📈' : cat.variacao < 0 ? '📉' : '➡️';
+        const tendencia = cat.tendencia === 'aumento' ? 'Aumento' : cat.tendencia === 'reducao' ? 'Redução' : 'Estável';
+        
+        html += `
+            <tr>
+                <td><strong>${cat.categoria}</strong></td>
+                <td class="text-end">R$ ${cat['2025'].toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                <td class="text-end">R$ ${cat['2026'].toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                <td class="text-end ${corVariacao}">
+                    <strong>${cat.variacao > 0 ? '+' : ''}${cat.variacao}%</strong>
+                </td>
+                <td>${icone} ${tendencia}</td>
+            </tr>
+        `;
+    });
+    
+    html += '</tbody></table></div>';
+    container.innerHTML = html;
+}
+
+// ========== GRÁFICO DE FORECAST PREDITIVO ==========
+async function inicializarGraficoForecast() {
+    const ctx = document.getElementById('graficoForecast');
+    if (!ctx) {
+        console.log('⚠️ Canvas graficoForecast não encontrado');
+        return;
+    }
+    
+    try {
+        // Buscar dados de projeção da API
+        const res = await fetch('/api/dashboard/projecoes');
+        if (!res.ok) throw new Error('API de projeções não disponível');
+        
+        const data = await res.json();
+        
+        // Criar gradiente para o gráfico
+        const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(59, 130, 246, 0.4)');
+        gradient.addColorStop(1, 'rgba(59, 130, 246, 0)');
+        
+        // Criar gráfico de linha
+        graficoForecast = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.labels,  // ['Mai/2026', 'Jun/2026', ...]
+                datasets: [{
+                    label: 'Saldo Projetado (R$)',
+                    data: data.valores,  // [185000, 180000, ...]
+                    borderColor: '#3b82f6',
+                    borderWidth: 4,
+                    backgroundColor: gradient,
+                    fill: true,
+                    tension: 0.4,  // Curva suave
+                    pointBackgroundColor: '#3b82f6',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 6,
+                    pointHoverRadius: 8,
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: '#3b82f6',
+                    pointHoverBorderWidth: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
+                plugins: {
+                    legend: {
+                        display: false  // Esconde legenda (já tem no título)
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        borderColor: '#3b82f6',
+                        borderWidth: 1,
+                        padding: 12,
+                        displayColors: false,
+                        callbacks: {
+                            label: function(context) {
+                                const valor = context.parsed.y;
+                                return `Saldo Projetado: R$ ${valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.05)',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: '#94a3b8',
+                            padding: 10,
+                            font: {
+                                size: 11
+                            },
+                            callback: function(value) {
+                                return 'R$ ' + value.toLocaleString('pt-BR', {minimumFractionDigits: 0, maximumFractionDigits: 0});
+                            }
+                        },
+                        beginAtZero: false
+                    },
+                    x: {
+                        grid: {
+                            display: false,
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: '#94a3b8',
+                            padding: 10,
+                            font: {
+                                size: 11
+                            },
+                            maxRotation: 45,
+                            minRotation: 45
+                        }
+                    }
+                }
+            }
+        });
+        
+        console.log('✅ Gráfico Forecast inicializado com sucesso');
+        
+    } catch (err) {
+        console.error('❌ Erro ao inicializar gráfico Forecast:', err);
+        
+        // Fallback: mostrar mensagem amigável
+        ctx.parentNode.innerHTML = `
+            <div class="text-center py-5">
+                <i class="bi bi-hourglass-split text-primary fs-1 mb-3"></i>
+                <h5 class="text-white mb-2">Projeção por IA em desenvolvimento</h5>
+                <p class="text-muted small mb-0">
+                    Em breve: análise preditiva do seu saldo baseada em inteligência artificial.<br>
+                    Considere suas contas fixas e média histórica de gastos variáveis.
+                </p>
+            </div>
+        `;
+    }
+}
+
+// ===============================================================
 // 🔒 Forecast com fallback (evita erro se API não existir)
+// ===============================================================
 async function inicializarGraficoForecastDefensivo() {
     const ctx = document.getElementById('graficoForecast');
     if (!ctx) return;
@@ -551,6 +902,146 @@ function abrirModalReserva() {
     if (modalEl) new bootstrap.Modal(modalEl).show();
 }
 
+// Adicionar antes do DOMContentLoaded:
+function atualizarResumoComparativo(dados) {
+    if (!dados.resumo_anual) return;
+    
+    const formatar = (val) => `R$ ${val.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+    const formatarPct = (val) => `${val > 0 ? '+' : ''}${val}%`;
+    
+    // Preencher valores 2025
+    document.getElementById('resumo-rec-2025').textContent = formatar(dados.resumo_anual.total_receitas_2025);
+    document.getElementById('resumo-desp-2025').textContent = formatar(dados.resumo_anual.total_despesas_2025);
+    
+    // Preencher valores 2026
+    document.getElementById('resumo-rec-2026').textContent = formatar(dados.resumo_anual.total_receitas_2026);
+    document.getElementById('resumo-desp-2026').textContent = formatar(dados.resumo_anual.total_despesas_2026);
+    
+    // Preencher variações
+    const varRec = dados.resumo_anual.variacao_receitas;
+    const varDesp = dados.resumo_anual.variacao_despesas;
+    
+    const badgeRec = document.getElementById('var-rec');
+    badgeRec.textContent = formatarPct(varRec);
+    badgeRec.className = `badge px-3 py-2 ${varRec >= 0 ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'}`;
+    
+    const badgeDesp = document.getElementById('var-desp');
+    badgeDesp.textContent = formatarPct(varDesp);
+    badgeDesp.className = `badge px-3 py-2 ${varDesp <= 0 ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'}`;
+}
+
+// ========== GRÁFICO DE TENDÊNCIA ACUMULADA ==========
+function inicializarGraficoTendencia(dados) {
+    const ctx = document.getElementById('graficoTendencia');
+    if (!ctx) {
+        console.log('⚠️ Canvas graficoTendencia não encontrado');
+        return;
+    }
+    
+    try {
+        // Calcular tendência acumulada a partir dos dados da API
+        const labels = dados.evolucao_mensal.labels; // ['Jan', 'Fev', ...]
+        const despesas2026 = dados.evolucao_mensal['2026'].despesas;
+        const receitas2026 = dados.evolucao_mensal['2026'].receitas;
+        
+        // Calcular saldo mensal e acumulado
+        const saldosMensais = [];
+        const saldoAcumulado = [];
+        let acumulado = 0;
+        
+        for (let i = 0; i < labels.length; i++) {
+            const saldoMes = receitas2026[i] - despesas2026[i];
+            saldosMensais.push(saldoMes);
+            acumulado += saldoMes;
+            saldoAcumulado.push(acumulado);
+        }
+        
+        // Criar gradiente
+        const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 350);
+        gradient.addColorStop(0, 'rgba(16, 185, 129, 0.3)');
+        gradient.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
+        
+        graficoTendencia = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Saldo Acumulado',
+                    data: saldoAcumulado,
+                    borderColor: '#10b981',
+                    borderWidth: 3,
+                    backgroundColor: gradient,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#10b981',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 7
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        borderColor: '#10b981',
+                        borderWidth: 1,
+                        padding: 12,
+                        displayColors: false,
+                        callbacks: {
+                            label: function(context) {
+                                const valor = context.parsed.y;
+                                return `Acumulado: R$ ${valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: '#64748b',
+                            padding: 10,
+                            callback: function(value) {
+                                return 'R$ ' + value.toLocaleString('pt-BR', {minimumFractionDigits: 0});
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false,
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: '#64748b',
+                            padding: 10
+                        }
+                    }
+                }
+            }
+        });
+        
+        console.log('✅ Gráfico de Tendência Acumulada inicializado');
+        
+    } catch (err) {
+        console.error('❌ Erro ao inicializar gráfico de tendência:', err);
+    }
+}
+
 // 🔒 Reserva com fallback
 async function carregarDadosReservaDefensivo() {
     try {
@@ -611,5 +1102,42 @@ async function carregarAnaliseAssinaturasDefensivo() {
         console.log('⚠️ Assinaturas API não disponível (modo desenvolvimento)');
     }
 }
+
+// Adicionar ao final do bloco <script>, antes de </script>:
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        // 1️⃣ Buscar dados atualizados da API
+        const res = await fetch('/api/dashboard/data');
+        if (!res.ok) throw new Error('Falha ao carregar dados');
+        const dados = await res.json();
+        
+        // 2️⃣ Atualizar barra comparativa interanual
+        if (typeof atualizarResumoComparativo === 'function') {
+            atualizarResumoComparativo(dados);
+        }
+        
+        // 3️⃣ Inicializar gráficos
+        if (typeof inicializarGraficoComparativo === 'function') {
+            inicializarGraficoComparativo(dados);
+        }
+        if (typeof inicializarGraficoCategorias === 'function') {
+            inicializarGraficoCategorias(dados);
+        }
+        if (typeof inicializarGraficoForecast === 'function') {
+            await inicializarGraficoForecast();
+        }
+        if (typeof inicializarGraficoTendencia === 'function') {
+            inicializarGraficoTendencia(dados);
+        }
+        
+        // 4️⃣ Carregar features defensivas
+        carregarDadosReservaDefensivo();
+        carregarAnaliseAssinaturasDefensivo();
+        
+    } catch (err) {
+        console.error('❌ Erro ao inicializar dashboard:', err);
+        console.log('⚠️ Usando dados estáticos do template');
+    }
+});
 </script>
 {% endblock %}

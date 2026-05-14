@@ -119,11 +119,15 @@
                         
                         <div class="input-group input-group-sm" style="max-width: 350px;">
                             <input type="file" id="fileDocumento" name="documento" class="form-control bg-dark text-white border-secondary" accept=".pdf">
-                            <button type="button" class="btn btn-outline-info border-secondary" onclick="fazerUploadPDF()">
-                                <i class="bi bi-magic me-1"></i> ANALISAR
+                            <button type="button" class="btn btn-outline-info border-secondary" onclick="fazerUploadPDF()" title="Processar com Inteligência Artificial">
+                                <i class="bi bi-magic me-1"></i> LER COM IA
                             </button>
                         </div>
                         
+                        <button type="button" class="btn btn-sm btn-outline-secondary border-secondary" onclick="document.getElementById('fileDocumento').click()" title="Apenas anexar arquivo">
+                            <i class="bi bi-paperclip me-1"></i> ANEXAR DOC
+                        </button>
+
                         <button type="button" class="btn btn-sm btn-outline-light border-secondary" id="btnVerAnexo" onclick="visualizarAnexoExistente()">
                             <i class="bi bi-file-earmark-pdf me-1"></i> VER ATUAL
                         </button>
@@ -133,6 +137,11 @@
                                 <i class="bi bi-check-circle-fill me-1"></i> DOCUMENTO PRESENTE
                             </span>
                         </div>
+                        
+                        <!-- BOTÃO SALVAR ADICIONADO AQUI -->
+                        <button type="submit" class="btn btn-warning ms-auto px-4 fw-bold shadow-sm rounded-pill" id="btnSalvar">
+                            <i class="bi bi-save me-2"></i> SALVAR REGISTRO
+                        </button>
                     </div>
                     <div class="mt-2 text-white-50 small">
                         <i class="bi bi-info-circle me-1"></i> A IA extrai automaticamente <strong>Valor, Vencimento e Descrição</strong> do boleto.
